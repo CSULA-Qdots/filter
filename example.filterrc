@@ -1,0 +1,3 @@
+set operator "YOUR NAME HERE"
+set delta 10
+set threshold 0.10
