@@ -1,5 +1,5 @@
-filter
-======
+filter.tcl
+==========
 Data filtering for the CSULA quantum-dot spectroscopy experiment
 
 Basic noise-reject algorythm:
@@ -16,19 +16,25 @@ and/or delta grows over 4. Suggest values of 0.10 and 10.
 See C:\Data\Dropbox\QD\2010\10-Oct\10-21-2010
 
 rescale.tcl
-======
+===========
 Same as filter with an adjustment for photomultiplier sensitivity.
 Scaling performed according to an Excel polynomial fit to data from reading
 and interpolating the RCA chart for the 7102 PMT.
+Possibly deprecated, needs further testing in combination with baseline_zero.tcl.
 
 example.filterrc
-======
-A filterrc file to copy into your home directory under the name .filterrc
-Change username to your own for logging purposes. See logs in data directory.
+================
+Provides options to filter.tcl and rescale.tcl. example.filterrc should be copied into your home directory under the name .filterrc
+Change username to your own name for logging purposes. See logs in QD/data
+
+baseline_zero.m
+===============
+Subtracts a baseline from data based on a fit to a background run.
+**Aaron, insert instructions here**
 
 Branch Naming
 =============
 So, the way you name a branch is this: initials.descriptive and then you
 can work on it. Don't fork the project, it makes it harder for me to merge your improvements back into the mainline.
 
-To make a branch to work on a feature, I (Ryan) will type: git brnach rd.laserdetect
+To make a branch to work on a feature, I (Ryan) will type: git branch rd.laserdetect
