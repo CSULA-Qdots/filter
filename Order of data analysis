@@ -8,7 +8,7 @@ If we land on a sharp peak or a trough when picking these points, we will get a 
 Step 3: Zero data. (Zeroing program)
 - This is done with the background signal of the GaAs wafer. A quadratic fit was used to model this data:
 y = 0.0015873240642803 - 0.00000025667991263308*r +0.000000000011008884166353*r*r
-r is the wavelength, and y is the strength of the signal.
+r is the wavelength, and y is the signal.
 
 Step 4: Fit data. (IPF)
 - We use equal-width Gaussians with NO autozeroing (it's been taken care of by the zeroing program in the previous step).
