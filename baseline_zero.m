@@ -1,6 +1,21 @@
-function baseline_zero (name)
+function baseline_zero (input)
 
+% This segment of the code splits up the input into multiple strings
+
+list_names = textscan(input, '%s');
+list_names = list_names{1}
+times = length(list_names)
+
+% Runs the zeroing for each string
+
+for repeat = 1:times
+    doIt = list_names(repeat);
+    dissect(doIt);
+end
+
+function dissect (fame)
 % Grab the data.
+name = char(fame);
 structure = importdata(name);
 signal = structure.data; % The .data part of a structure is the numerical part. Headers will be ignored.
 
@@ -93,5 +108,6 @@ end
 
 function correction = amp(x)
 correction = (amplitude2 - amplitude1)/(signal(index2,1) - signal(index,1)) * (x - signal(index, 1)) + amplitude1;
+end
 end
 end
