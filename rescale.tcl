@@ -1,6 +1,7 @@
 #!/usr/bin/tclsh
 # Filter program for QD spectral data. The design is to reject spikes.
 # An optional conversion of wavelength into energy is performed.
+#Adjusts for a model of quantum sensitivity of photomultiplier tube
 
 proc writeconfig {} {
 #stub
@@ -23,7 +24,8 @@ proc lambdatoev {lambda} {
    return [expr {12398.419/$lambda}]
 }
 
-proc sensitivity {ev} {
+#Derived from fitting a polynomial curve to data extracted from RCA documents in Excel
+gagaproc sensitivity {ev} {
    return [expr {40.5593*($ev **4)-237.959*($ev **3)+514.331*($ev **2)-483.73*$ev+167.137}]
 }
 
@@ -102,7 +104,7 @@ set rejectlist {}
       set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
       set wl $currentdata($i.lambda)
       set ev $currentdata($i.eV)
-      if {(($wl >= 7000) && ($wl <=7800)) || (($wl >=10500)&&($wl <= 10800))} {
+      if {(($wl >= 7000) && ($wl <=7800)) || (($wl >=10300)&&($wl <= 11600))} {
          lappend rejectlist $i
       }
       if {$deviation > $threshold} {
