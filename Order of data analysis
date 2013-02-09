@@ -1,4 +1,18 @@
 Step 1: Filter data. (Filtering program)
-Step 2: Smooth data. ???
+- This must come first, as we have to get rid of the second order peak.
+
+Step 2: Smooth data. ??? (Is there a smoothing program??)
+- This must come before zeroing the data; We callibrate our background signal using two points of the original signal.
+If we land on a sharp peak or a trough when picking these points, we will get a large negative signal.
+
 Step 3: Zero data. (Zeroing program)
+- This is done with the background signal of the GaAs wafer. A quadratic fit was used to model this data:
+y = 0.0015873240642803 - 0.00000025667991263308*r +0.000000000011008884166353*r*r
+r is the wavelength, and y is the strength of the signal.
+
 Step 4: Fit data. (IPF)
+- We use equal-width Gaussians with NO autozeroing (it's been taken care of by the zeroing program in the previous step).
+We fit 4 peaks and generate a list of results, which we put in a spreadsheet.
+
+Step 5: Bin the data. (Histogram)
+- This is easy.
