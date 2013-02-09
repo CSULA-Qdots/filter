@@ -151,7 +151,7 @@ global threshold
          puts $rejects [join $output "\t"]
       }
    }
-   log "Wrote $rejectcount line to rejects."
+   log "Wrote $rejectcount lines to rejects."
    log "Wrote $linecount lines to output. Done."
    close $outfile
    close $rejects
