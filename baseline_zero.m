@@ -1,4 +1,4 @@
-function Aaron_Zero_4 (name)
+function baseline_zero (name)
 
 % Grab the data.
 structure = importdata(name);
