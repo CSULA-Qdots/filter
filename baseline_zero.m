@@ -41,7 +41,8 @@ end
 % This part of the code callibrates our fit to the data. The idea is that
 % the value of the signal should be zero at 11000 A and 7500 A. We multiply
 % our fit by a linear function (called amp) and use that to callibrate our
-% data. 
+% data. In this version, we incorporate an averaging feature, which helps
+% to avoid peak and dip features.
 
  average1 = (signal(index-2,2) + signal(index-1,2) + signal(index,2) + signal(index+1,2) + signal(index+2,2))/5.0;
  amplitude1 = average1 / f(signal(index,1));
