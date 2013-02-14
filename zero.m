@@ -4,8 +4,7 @@ function zero (input)
 	list_names = textscan(input, '%s');
 	list_names = list_names{1}
 
-	%???
-	%Can matlab handle using the length function in the for loop terminator?
+	% list_names now becomes an array that holds the names of the files
 	numFiles = length(list_names)
 
 	% Runs the zeroing for each name submitted
@@ -68,12 +67,7 @@ function zero (input)
 		% our fit by a linear function (called amp) and use that to callibrate our
 		% data. We incorporate an averaging feature to avoid peak and dip features.
 
-		%???
-		%Is this a proper array definition? It could use the average function if so.
-		%Even better, maybe we can build the array in a for loop to allow easy changes to its length
-		%[signal(calibrationPoint1-2,2) signal(calibrationPoint1-1,2) signal(calibrationPoint1,2) signal(calibrationPoint1+1,2) signal(calibrationPoint1+2,2)]
-
-
+        % These are the average values, not arrays.
 		 average1 = (signal(calibrationPoint1-2,2) + signal(calibrationPoint1-1,2) + signal(calibrationPoint1,2) + signal(calibrationPoint1+1,2) + signal(calibrationPoint1+2,2))/5.0;
 		 amplitude1 = average1 / backgroundQuadraticApprox(signal(calibrationPoint1,1));
 		 average2 = (signal(calibrationPoint2-2,2) + signal(calibrationPoint2-1,2) + signal(calibrationPoint2,2) + signal(calibrationPoint2+1,2) + signal(calibrationPoint2+2,2))/5.0;
@@ -82,18 +76,24 @@ function zero (input)
 
 		% This is my way to make the filename of the outputfile 'a_corrected.dat',
 		% if the original file was 'a.something'
-		% Don't judge me!
 
-		%???
-		%I don't understand this well enough to reasonably rename the variables
-		 ar = char(fileName);
-		 inder = 1;
-		 hithere = 0;
-		 while hithere < 1
-			 new(inder) = ar(inder);
-			 inder = inder + 1;
-			 if (ar(inder) == '.')
-				hithere = 3;
+		% ar is a character array, with all the characters of fileName.
+        % index_name is an index that keeps track of what character we're
+        % on. The for loop keeps scanning the character array, looking for
+        % a period. If it finds a period, the conditional is_Period becomes
+        % greater than 1 and the loop terminates. All the characters before
+        % the period are put into the character array called new. This
+        % array is then concatenated with _corrected.dat, and that is our
+        % filename.
+        
+        ar = char(fileName);
+		 index_name = 1;
+		 is_Period = 0;
+		 while is_Period < 1
+			 new(index_name) = ar(index_name);
+			 index_name = index_name + 1;
+			 if (ar(index_name) == '.')
+				is_Period = 3;
 			 end
 		 end
 
@@ -101,7 +101,7 @@ function zero (input)
 		fileHandle = fopen(strcat(new,'_corrected.dat'), 'w');
 
 		% Subtract out the callibration and put it in the file.
-		%m is total number of points
+		% m is total number of points
 
 		for i = 1:m
 			g(i,1) = signal(i,1);
@@ -118,12 +118,8 @@ function zero (input)
 
 		% This function is our quadratic fit of the background GaAs wafer.
 		function y = backgroundQuadraticApprox(x)
-			%???
-			%Is this function definition recursive?
 
-			%???
-			%Rename to something better
-			bgFitParam1 = 12400.0;
+            bgFitParam1 = 12400.0;
 			bgConst = 0.0015873240642803;
 			bgLinear = 0.00000025667991263308;
 			bgQuadratic = 0.000000000011008884166353;
@@ -137,8 +133,6 @@ function zero (input)
 		% fit of our fit, so to speak. This process skews the fit by multiplying a
 		% line to the original background.
 		function correction = amp(x)
-			%???
-			%Is this function definition recursive?
 
 			correction = (amplitude2 - amplitude1)/(signal(calibrationPoint2,1) - signal(calibrationPoint1,1)) * (x - signal(calibrationPoint1, 1)) + amplitude1;
 		end
