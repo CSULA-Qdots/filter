@@ -34,8 +34,12 @@ function zero (input)
 		% This algorithm calculates the point that is closest to the first
 		% callibration wavelength. min represents the distance to the
 		% desired value. I just use a minimization loop to find the value that
-		% gives the lowest min value. The first callibration point is 1.653 eV, or
-		% 7500 A.
+		% gives the lowest min value.
+
+		calPoint1eV = 1.653;
+		%calPoint1A = 7500;
+		calPoint2eV = 1.127;
+		%calPoint2A = 11000;
 
 		min = 100;
 		calibrationPoint1 = 1;
@@ -44,22 +48,21 @@ function zero (input)
 		% Absolute value is required to handle negative spikes
 
 		for i = 3:m-3
-			if abs(signal(i,1) - 1.653) < min
+			if abs(signal(i,1) - calPoint1eV) < min
 				calibrationPoint1 = i;
-				min = abs(signal(i,1) - 1.653);
+				min = abs(signal(i,1) - calPoint1eV);
 			end
 		end
 
 		% This repeats the same procedure, but for a second callibration point:
-		% This one is at 1.127 eV, or 11000 A.
 
 		min2 = 100;
 		calibrationPoint2 = 1;
 
 		for i = 3:m-3
-			if abs(signal(i,1) - 1.127) < min2
+			if abs(signal(i,1) - calPoint2eV) < min2
 				calibrationPoint2 = i;
-				min2 = abs(signal(i,1) - 1.127);
+				min2 = abs(signal(i,1) - calPoint2eV);
 			end
 		end
 
@@ -67,6 +70,13 @@ function zero (input)
 		% the value of the signal should be zero at 11000 A and 7500 A. We multiply
 		% our fit by a linear function (called amp) and use that to callibrate our
 		% data. We incorporate an averaging feature to avoid peak and dip features.
+
+		%???
+		%Is this a proper array definition? It could use the average function if so.
+		%Even better, maybe we can build the array in a for loop to allow easy changes to its length
+
+		%[signal(calibrationPoint1-2,2) signal(calibrationPoint1-1,2) signal(calibrationPoint1,2) signal(calibrationPoint1+1,2) signal(calibrationPoint1+2,2)]
+
 
 		 average1 = (signal(calibrationPoint1-2,2) + signal(calibrationPoint1-1,2) + signal(calibrationPoint1,2) + signal(calibrationPoint1+1,2) + signal(calibrationPoint1+2,2))/5.0;
 		 amplitude1 = average1 / backgroundQuadraticApprox(signal(calibrationPoint1,1));
@@ -115,8 +125,15 @@ function zero (input)
 			%???
 			%Is this function definition recursive?
 
-			r = 12400.0/x; % The original formula is in wavelength, and our data is in eV.
-			y = 0.0015873240642803 - 0.00000025667991263308*r +0.000000000011008884166353*r*r;
+			%???
+			%Rename to something better
+			bgFitParam1 = 12400.0;
+			bgConst = 0.0015873240642803;
+			bgLinear = 0.00000025667991263308;
+			bgQuadratic = 0.000000000011008884166353;
+
+			r = bgFitParam1/x; % The original formula is in wavelength, and our data is in eV.
+			y = bgConst - bgLinear*r +bgQuadratic*r*r;
 		end
 
 
