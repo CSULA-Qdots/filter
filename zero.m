@@ -2,10 +2,10 @@ function zero (input)
 	% This segment of the code splits up the input into multiple strings
 
 	list_names = textscan(input, '%s');
-	list_names = list_names{1}
+	list_names = list_names{1};
 
 	% list_names now becomes an array that holds the names of the files
-	numFiles = length(list_names)
+	numFiles = length(list_names);
 
 	% Runs the zeroing for each name submitted
 
