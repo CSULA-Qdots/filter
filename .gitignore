@@ -1,2 +1,6 @@
 # Ignore log files.
 *.log
+#Ignore editor autosave files
+~*
+*~
+*.asv
