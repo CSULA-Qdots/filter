@@ -1,6 +1,7 @@
 #!/usr/bin/tclsh
 # Filter program for QD spectral data. The design is to reject spikes.
-# An optional conversion of wavelength into energy is performed.
+# Data is emitted in both wavelength and energy terms
+# Can perform optional adjustment for a model of quantum sensitivity of photomultiplier tube
 
 proc writeconfig {} {
 #stub
@@ -21,6 +22,12 @@ proc min {a b} {
 
 proc lambdatoev {lambda} {
    return [expr {12398.419/$lambda}]
+}
+
+
+#Derived from fitting a polynomial curve to data extracted from RCA documents in Excel
+gagaproc sensitivity {ev} {
+   return [expr {40.5593*($ev **4)-237.959*($ev **3)+514.331*($ev **2)-483.73*$ev+167.137}]
 }
 
 # Logging infrastructure. Logs are our freinds.
@@ -111,10 +118,16 @@ set rejectlist {}
 
 proc process {} {
 global currentdata
-   
+global pmtScale
+
    for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
-      set currentdata($i.eV) [lambdatoev $currentdata($i.lambda)]
-   }
+#??? Changed
+	   if {pmtScale == 0} {
+		   set currentdata($i.corrected) [expr {$currentdata($i.intensity)/[sensitivity $currentdata($i.eV)]}]
+	   } {
+			set currentdata($i.eV) [lambdatoev $currentdata($i.lambda)]
+		}
+	}
 }
 
 proc writedata {fname} {
@@ -126,14 +139,26 @@ global threshold
    set outfile [open $fname w]
    set rejects [open "$fname.reject" w]
    puts $outfile "Filtered! delta:$delta thresh:$threshold $currentdata(comment)"
-   puts $outfile "eV\tLockin SR510\tDMM Kiethley 199"
-   puts $rejects "Rejected! delta:$delta thresh:$threshold $currentdata(comment)"
+#??? Changed
+	   if {pmtScale == 0} {
+		   puts $outfile "PMT Scaled! delta:$delta thresh:$threshold $currentdata(comment)"
+			puts $rejects "eV\tCorrected Intensity\tDMM Kiethley 199"
+	   } {
+		  puts $outfile "eV\tLockin SR510\tDMM Kiethley 199"
+			puts $rejects "Rejected! delta:$delta thresh:$threshold $currentdata(comment)"
+		}
+
    puts $rejects "eV\tLockin SR510\tDMM Kiethley 199"
    set linecount 0
    set rejectcount 0
    for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
       set output {}
-      lappend output [format "%0.12f" $currentdata($i.eV)]
+#??? Changed
+      if {pmtScale == 0} {
+		  lappend output [format "%0.12f" $currentdata($i.corrected)]
+	  } {
+		lappend output [format "%0.12f" $currentdata($i.eV)]
+		}
       lappend output [format "%0.12f" $currentdata($i.intensity)]
       lappend output [format "%0.12f" $currentdata($i.temp)]
       if {[lsearch -exact $currentdata(rejectlist) $i] == -1} {
@@ -185,11 +210,18 @@ log $argv
 set filenames {}
 if {[string compare "-" [lindex $argv 0]]!=0} {
    foreach fname $argv {
-      set dirname [file dirname $fname]
-      set globname [file tail $fname]
-      set filenames [concat $filenames [glob -dir $dirname $globname]]
-      unset dirname
-      unset globname
+#??? Changed
+	  if {[string compare "--pmt" [lindex $argv 0]]==0} {
+		  log "PMT Sensitivity scaling activated"
+		  global pmtScale
+		  set pmtScale [0]
+	  } {
+		  set dirname [file dirname $fname]
+		  set globname [file tail $fname]
+		  set filenames [concat $filenames [glob -dir $dirname $globname]]
+		  unset dirname
+		  unset globname
+  }
    }
 } {
    while {! [eof stdin]} {
