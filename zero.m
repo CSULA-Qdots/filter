@@ -2,9 +2,6 @@ function zero (input)
 	% This segment of the code splits up the input into multiple strings
 
 	list_names = textscan(input, '%s');
-	%???
-	%list_names is already defined as an array, does making it a single element
-	%cause problems? Like the current inability to work on multiple files?
 	list_names = list_names{1}
 
 	%???
@@ -74,7 +71,6 @@ function zero (input)
 		%???
 		%Is this a proper array definition? It could use the average function if so.
 		%Even better, maybe we can build the array in a for loop to allow easy changes to its length
-
 		%[signal(calibrationPoint1-2,2) signal(calibrationPoint1-1,2) signal(calibrationPoint1,2) signal(calibrationPoint1+1,2) signal(calibrationPoint1+2,2)]
 
 
