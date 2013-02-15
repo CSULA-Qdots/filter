@@ -13,166 +13,167 @@ proc makegui {} {
 
 # Kind of some basic math. Mostly syntactic sugar.
 proc max {a b} {
-   return [expr {$a > $b ? $a : $b}]
-}
+        return [expr {$a > $b ? $a : $b}]
+       }
 
 proc min {a b} {
-   return [expr {$a > $b ? $b : $a}]
-}
+        return [expr {$a > $b ? $b : $a}]
+       }
 
 proc lambdatoev {lambda} {
-   return [expr {12398.419/$lambda}]
-}
+        return [expr {12398.419/$lambda}]
+       }
 
 
 #Derived from fitting a polynomial curve to data extracted from RCA documents in Excel
-gagaproc sensitivity {ev} {
-   return [expr {40.5593*($ev **4)-237.959*($ev **3)+514.331*($ev **2)-483.73*$ev+167.137}]
-}
+#??? Changed
+proc sensitivity {ev} {
+        return [expr {40.5593*($ev **4)-237.959*($ev **3)+514.331*($ev **2)-483.73*$ev+167.137}]
+       }
 
 # Logging infrastructure. Logs are our freinds.
 proc log {line} {
-global logfile
-   set timestamp [clock format [clock seconds] -format "%H%M%S"]
-   puts $logfile "$timestamp : $line"
-   puts "$timestamp : $line"
+        global logfile
+        set timestamp [clock format [clock seconds] -format "%H%M%S"]
+        puts $logfile "$timestamp : $line"
+        puts "$timestamp : $line"
 }
 
 proc closelog {} {
-global logfile
-   set timestamp [clock format [clock seconds] -format "%Y%m%d%H%M%S"]
-   log "Closing log at $timestamp"
-   close $logfile
+        global logfile
+        set timestamp [clock format [clock seconds] -format "%Y%m%d%H%M%S"]
+        log "Closing log at $timestamp"
+        close $logfile
 }
 
 proc startlog {directory} {
-global logfile
+        global logfile
 
-   set timestamp [clock format [clock seconds] -format "%Y%m%d%H%M%S"]
-   set filename [file join $directory "log-$timestamp.log"]
-   set logfile [open $filename w]
-   log "Log starting at $timestamp"
-   return $logfile
+        set timestamp [clock format [clock seconds] -format "%Y%m%d%H%M%S"]
+        set filename [file join $directory "log-$timestamp.log"]
+        set logfile [open $filename w]
+        log "Log starting at $timestamp"
+        return $logfile
 }
 
 proc runaverage {start end {col "intensity"}} {
-global currentdata
-set sum 0
+        global currentdata
+        set sum 0
 
-   for {set i $start} {$i <= $end} {incr i} {
-      set sum [expr {$sum + $currentdata($i.$col)}]
-   }
-   return [expr {$sum / ($end - $start + 1)}]
-}
+        for {set i $start} {$i <= $end} {incr i} {
+        set sum [expr {$sum + $currentdata($i.$col)}]
+        }
+        return [expr {$sum / ($end - $start + 1)}]
+       }
 
 proc loaddata {fname} {
-global currentdata
-variable line
+        global currentdata
+        variable line
 
-   unset currentdata
-   log "Starting data load from $fname"
-   set infile [open $fname "r"]
-   gets $infile comment
-   gets $infile line
-   set currentdata(comment) $comment
-   set currentdata(header) $line
-   set linecount 0
-   while {![eof $infile]} {
-      gets $infile line
-      set line [split $line]
-      if {[llength $line]} {
-         incr linecount
-         set currentdata($linecount.lambda) [lindex $line 0]
-         set currentdata($linecount.intensity) [lindex $line 1]
-         set currentdata($linecount.temp) [lindex $line 2]
-      }
-   }
-   set currentdata(linecount) $linecount
-   log "Read $linecount lines from file."
-   close $infile
+        unset currentdata
+        log "Starting data load from $fname"
+        set infile [open $fname "r"]
+        gets $infile comment
+        gets $infile line
+        set currentdata(comment) $comment
+        set currentdata(header) $line
+        set linecount 0
+        while {![eof $infile]} {
+                gets $infile line
+                set line [split $line]
+                if {[llength $line]} {
+                        incr linecount
+                        set currentdata($linecount.lambda) [lindex $line 0]
+                        set currentdata($linecount.intensity) [lindex $line 1]
+                        set currentdata($linecount.temp) [lindex $line 2]
+                }
+        }
+        set currentdata(linecount) $linecount
+        log "Read $linecount lines from file."
+        close $infile
 }
 
 proc buildrejects {} {
-global currentdata
-global delta
-global threshold
-set rejectlist {}
+        global currentdata
+        global delta
+        global threshold
+        set rejectlist {}
 
-   for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
-      set first [max 1 [expr {$i - $delta}]]
-      set last [min $currentdata(linecount) [expr {$i + $delta}]]
-      set avg [runaverage $first $last]
-      set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
-      set wl $currentdata($i.lambda)
-      set ev $currentdata($i.eV)
-      if {(($wl >= 7000) && ($wl <=7800)) || (($wl >=10300)&&($wl <= 11600))} {
-         lappend rejectlist $i
-      }
-      if {$deviation > $threshold} {
-         lappend rejectlist $i
-      }
-   }
-   set currentdata(rejectlist) $rejectlist
-   return $rejectlist
+        for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+                set first [max 1 [expr {$i - $delta}]]
+                set last [min $currentdata(linecount) [expr {$i + $delta}]]
+                set avg [runaverage $first $last]
+                set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
+                set wl $currentdata($i.lambda)
+                set ev $currentdata($i.eV)
+                if {(($wl >= 7000) && ($wl <=7800)) || (($wl >=10300)&&($wl <= 11600))} {
+                        lappend rejectlist $i
+                }
+                if {$deviation > $threshold} {
+                lappend rejectlist $i
+        }
 }
+set currentdata(rejectlist) $rejectlist
+        return $rejectlist
+       }
 
 proc process {} {
-global currentdata
-global pmtScale
+        global currentdata
+        global pmtScale
 
-   for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+        for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
 #??? Changed
-	   if {pmtScale == 0} {
-		   set currentdata($i.corrected) [expr {$currentdata($i.intensity)/[sensitivity $currentdata($i.eV)]}]
-	   } {
-			set currentdata($i.eV) [lambdatoev $currentdata($i.lambda)]
-		}
-	}
+                if {pmtScale == 0} {
+                set currentdata($i.corrected) [expr {$currentdata($i.intensity)/[sensitivity $currentdata($i.eV)]}]
+                } {
+                        set currentdata($i.eV) [lambdatoev $currentdata($i.lambda)]
+                }
+        }
 }
 
 proc writedata {fname} {
-global currentdata
-global delta
-global threshold
+        global currentdata
+        global delta
+        global threshold
 
-   log "Writing data to file: $fname"
-   set outfile [open $fname w]
-   set rejects [open "$fname.reject" w]
-   puts $outfile "Filtered! delta:$delta thresh:$threshold $currentdata(comment)"
+        log "Writing data to file: $fname"
+        set outfile [open $fname w]
+        set rejects [open "$fname.reject" w]
+        puts $outfile "Filtered! delta:$delta thresh:$threshold $currentdata(comment)"
 #??? Changed
-	   if {pmtScale == 0} {
-		   puts $outfile "PMT Scaled! delta:$delta thresh:$threshold $currentdata(comment)"
-			puts $rejects "eV\tCorrected Intensity\tDMM Kiethley 199"
-	   } {
-		  puts $outfile "eV\tLockin SR510\tDMM Kiethley 199"
-			puts $rejects "Rejected! delta:$delta thresh:$threshold $currentdata(comment)"
-		}
+        if {pmtScale == 0} {
+        puts $outfile "PMT Scaled! delta:$delta thresh:$threshold $currentdata(comment)"
+        puts $rejects "eV\tCorrected Intensity\tDMM Kiethley 199"
+} {
+        puts $outfile "eV\tLockin SR510\tDMM Kiethley 199"
+        puts $rejects "Rejected! delta:$delta thresh:$threshold $currentdata(comment)"
+}
 
-   puts $rejects "eV\tLockin SR510\tDMM Kiethley 199"
-   set linecount 0
-   set rejectcount 0
-   for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
-      set output {}
+puts $rejects "eV\tLockin SR510\tDMM Kiethley 199"
+set linecount 0
+set rejectcount 0
+for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+                set output {}
 #??? Changed
-      if {pmtScale == 0} {
-		  lappend output [format "%0.12f" $currentdata($i.corrected)]
-	  } {
-		lappend output [format "%0.12f" $currentdata($i.eV)]
-		}
-      lappend output [format "%0.12f" $currentdata($i.intensity)]
-      lappend output [format "%0.12f" $currentdata($i.temp)]
-      if {[lsearch -exact $currentdata(rejectlist) $i] == -1} {
-         incr linecount
-         puts $outfile [join $output "\t"]
-      } {
-         incr rejectcount
-         puts $rejects [join $output "\t"]
-      }
-   }
-   log "Wrote $rejectcount line to rejects."
-   log "Wrote $linecount lines to output. Done."
-   close $outfile
-   close $rejects
+                if {pmtScale == 0} {
+                lappend output [format "%0.12f" $currentdata($i.corrected)]
+                } {
+                        lappend output [format "%0.12f" $currentdata($i.eV)]
+                }
+                lappend output [format "%0.12f" $currentdata($i.intensity)]
+                lappend output [format "%0.12f" $currentdata($i.temp)]
+                if {[lsearch -exact $currentdata(rejectlist) $i] == -1} {
+                        incr linecount
+                        puts $outfile [join $output "\t"]
+                } {
+                        incr rejectcount
+                        puts $rejects [join $output "\t"]
+                }
+        }
+        log "Wrote $rejectcount line to rejects."
+        log "Wrote $linecount lines to output. Done."
+        close $outfile
+        close $rejects
 }
 
 # GUI callibacks start here
@@ -183,21 +184,21 @@ startlog [file dirname argv0]
 set configfile [file join "~" ".filterrc"]
 log "Config file: [file nativename $configfile]"
 if [file exists $configfile] {
-   log "Reading configuration from $configfile"
-   source $configfile
-   log "Done"
-   log "Operator= $operator"
-   log "Delta= $delta"
-   log "Threshold= $threshold"
+        log "Reading configuration from $configfile"
+        source $configfile
+        log "Done"
+        log "Operator= $operator"
+        log "Delta= $delta"
+        log "Threshold= $threshold"
 } {
-   log "Creating default config."
-   set delta 3
-   set threshold 3
-   set datadir ""
-   set operator "Unknown"
+        log "Creating default config."
+        set delta 3
+        set threshold 3
+        set datadir ""
+        set operator "Unknown"
 #   log "Writing config to $configfile"
 #   writeconfig
-   log Done.
+        log Done.
 }
 
 #testing stuff starts here.
@@ -209,42 +210,42 @@ log "ARGV:"
 log $argv
 set filenames {}
 if {[string compare "-" [lindex $argv 0]]!=0} {
-   foreach fname $argv {
+        foreach fname $argv {
 #??? Changed
-	  if {[string compare "--pmt" [lindex $argv 0]]==0} {
-		  log "PMT Sensitivity scaling activated"
-		  global pmtScale
-		  set pmtScale [0]
-	  } {
-		  set dirname [file dirname $fname]
-		  set globname [file tail $fname]
-		  set filenames [concat $filenames [glob -dir $dirname $globname]]
-		  unset dirname
-		  unset globname
-  }
-   }
+                if {[string compare "--pmt" [lindex $argv 0]]==0} {
+                        log "PMT Sensitivity scaling activated"
+                        global pmtScale
+                        set pmtScale [0]
+                } {
+                        set dirname [file dirname $fname]
+                        set globname [file tail $fname]
+                        set filenames [concat $filenames [glob -dir $dirname $globname]]
+                        unset dirname
+                        unset globname
+                }
+        }
 } {
-   while {! [eof stdin]} {
-      gets stdin fname
-      if {! [eof stdin]} {lappend filenames $fname}
-   }
+        while {! [eof stdin]} {
+                gets stdin fname
+                if {! [eof stdin]} {lappend filenames $fname}
+        }
 }
 log $filenames
 foreach fname $filenames {
 
-   log "--"
-   if {[string match -nocase "*.out.dat" $fname]} {
-      log "Not processing $fname"
-   } {
-      loaddata $fname
-      log "Adding eV."
-      process
-      log "Done"
-      log "Building reject list:"
-      log [buildrejects]
-      log Done.
-      writedata "[file rootname $fname].out.dat"
-      log "Done with file $fname"
-   }
+        log "--"
+        if {[string match -nocase "*.out.dat" $fname]} {
+                log "Not processing $fname"
+        } {
+                loaddata $fname
+                log "Adding eV."
+                process
+                log "Done"
+                log "Building reject list:"
+                log [buildrejects]
+                log Done.
+                writedata "[file rootname $fname].out.dat"
+                log "Done with file $fname"
+        }
 }
 closelog
