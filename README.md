@@ -19,19 +19,25 @@ rescale.tcl
 Same as filter with an adjustment for photomultiplier sensitivity.
 Scaling performed according to an Excel polynomial fit to data from reading
 and interpolating the RCA chart for the 7102 PMT.
-Possibly deprecated, needs further testing in combination with baseline_zero.m
+Possibly deprecated, needs further testing in combination with background zeroing
 
 example.filterrc
 ================
 Provides options to filter.tcl and rescale.tcl. example.filterrc should be copied into your home directory under the name .filterrc
 Change username to your own name for logging purposes. See logs in QD/data
 
-baseline_zero.m
+zero.m
 ===============
 Subtracts a baseline from data based on a fit to a background run.
-Open MatLAB and type: baseline_zero('filename')
-filename should be in the same directory as the baseline_zero.m
-This program will spit out a filename_prefix + corrected.dat file.
+Use baselineCorrector.sh if possible. To use directly
+Open MatLAB and type: zero('filename')
+filename should be in the same directory as the baseline_zero.m unless pathed
+This program will output filename_corrected.out.eV.dat 
+
+baselineCorrector.sh
+===============
+Creates baseline subtracted versions of all eV.out.dat files in the current working directory. 
+Works on linux only. 
 
 Branch Naming
 =============
