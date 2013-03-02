@@ -39,6 +39,14 @@ baselineCorrector.sh
 Creates baseline subtracted versions of all eV.out.dat files in the current working directory. 
 Works on linux only. 
 
+spreadsheets/TestDataGenerator.ods
+===============
+Spreadsheet that creates data similar to our experiments. The centroids, height, and width factors of the peaks
+are adjustable on the Controls tab. The NoiseEx tab contains some functions for different kinds of noise.
+They can be summed up in the left column and the graph and first tab automatically update.
+To export data switch to the Out tab, Save As csv, and check the box to adjust options. The text delimiter should be "
+and the separator should be space or tab.
+
 Branch Naming
 =============
 So, the way you name a branch is this: initials.descriptive and then you
