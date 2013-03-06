@@ -16,7 +16,25 @@ and/or delta grows over 4. Suggest values of 0.10 and 10.
 
 filter.tcl
 ===========
-In progress. I'll write some docs for it once the features stabilize. Right now, adding an interpreter for command line options.
+New options file format. New, more powerful command line syntax. Actually writes the default config file! Doesn't do globbing, so windows users will need to specify full filnemaes, not just \*.dat
+
+Options:
+    -
+Read more filenames from STDIN
+    --optname
+shorthand for --optname=1
+    --optname=value
+set the option named 'optname' to 'value'
+    --
+all things after this are treated as filenames.
+
+Order isn't important unless you have some wierd filenames that look like options. Options on the command line over-ride those in the defaults file.
+
+Options list:
++ delta
++ threshold
++ operator
++ rescale (not yet implimented)
 
 rescale.tcl
 ===========
