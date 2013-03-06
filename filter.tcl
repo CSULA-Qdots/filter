@@ -42,7 +42,7 @@ proc startlog {directory} {
 global logfile
 
    set timestamp [clock format [clock seconds] -format "%Y%m%d%H%M%S"]
-   set filename [file join $directory "log-$timestamp.log"]
+   set filename [file join $directory "log-filter-$timestamp.log"]
    set logfile [open $filename w]
    log "Log starting at $timestamp"
    return $logfile
