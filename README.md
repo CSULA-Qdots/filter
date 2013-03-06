@@ -16,7 +16,6 @@ and/or delta grows over 4. Suggest values of 0.10 and 10.
 
 filter.tcl
 ===========
-<<<<<<< HEAD
 New options file format. New, more powerful command line syntax. Actually writes the default config file! Doesn't do globbing, so windows users will need to specify full filnemaes, not just \*.dat
 
 Options:
@@ -36,9 +35,6 @@ Options list:
 + threshold
 + operator
 + rescale (not yet implimented)
-=======
-In progress. I'll write some docs for it once the features stabilize. Right now, adding an interpreter for command line options.
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
 
 rescale.tcl
 ===========

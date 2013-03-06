@@ -2,10 +2,7 @@
 # Filter program for QD spectral data. The design is to reject spikes.
 # An optional conversion of wavelength into energy is performed.
 #Adjusts for a model of quantum sensitivity of photomultiplier tube
-<<<<<<< HEAD
-=======
 
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
 proc writeconfig {} {
 global opts
 set configfilename [file join "~" ".filterrc"]
@@ -35,13 +32,8 @@ proc lambdatoev {lambda} {
    return [expr {12398.419/$lambda}]
 }
 
-<<<<<<< HEAD
 proc sensitivity {ev} {
 #Derived from fitting a polynomial curve to data extracted from RCA documents in Excel
-=======
-#Derived from fitting a polynomial curve to data extracted from RCA documents in Excel
-proc sensitivity {ev} {
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
    return [expr {40.5593*($ev **4)-237.959*($ev **3)+514.331*($ev **2)-483.73*$ev+167.137}]
 }
 
@@ -134,13 +126,8 @@ proc process {} {
 global currentdata
    
    for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
-<<<<<<< HEAD
       set currentdata($i.ev) [lambdatoev $currentdata($i.lambda)]
       set currentdata($i.corrected) [expr {$currentdata($i.intensity)/[sensitivity $currentdata($i.ev)]}]
-=======
-      set currentdata($i.eV) [lambdatoev $currentdata($i.lambda)]
-      set currentdata($i.corrected) [expr {$currentdata($i.intensity)/[sensitivity $currentdata($i.eV)]}]
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
    }
 }
 
@@ -151,26 +138,15 @@ global opts
    log "writing data to file: $fname"
    set outfile [open $fname w]
    set rejects [open "$fname.reject" w]
-<<<<<<< HEAD
    puts $outfile "rescaled! delta:$opts(delta) thresh:$opts(threshold) $currentdata(comment)"
    puts $outfile "ev\tlockin sr510\tdmm kiethley 199"
    puts $rejects "rejected! delta:$opts(delta) thresh:$opts(threshold) $currentdata(comment)"
    puts $rejects "ev\tcorrected intensity\tdmm kiethley 199"
-=======
-   puts $outfile "Rescaled! delta:$opts(delta) thresh:$opts(threshold) $currentdata(comment)"
-   puts $outfile "eV\tLockin SR510\tDMM Kiethley 199"
-   puts $rejects "Rejected! delta:$opts(delta) thresh:$opts(threshold) $currentdata(comment)"
-   puts $rejects "eV\tCorrected Intensity\tDMM Kiethley 199"
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
    set linecount 0
    set rejectcount 0
    for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
       set output {}
-<<<<<<< HEAD
       lappend output [format "%0.12f" $currentdata($i.ev)]
-=======
-      lappend output [format "%0.12f" $currentdata($i.eV)]
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
       lappend output [format "%0.12f" $currentdata($i.corrected)]
       lappend output [format "%0.12f" $currentdata($i.temp)]
       if {[lsearch -exact $currentdata(rejectlist) $i] == -1} {
@@ -253,7 +229,6 @@ log "config file: [file nativename $configfile]"
 if [file exists $configfile] {
    log "reading configuration from $configfile"
    source $configfile
-<<<<<<< HEAD
    log "done"
    log "operator= $opts(operator)"
    log "delta= $opts(delta)"
@@ -265,21 +240,6 @@ if [file exists $configfile] {
    set opts(operator) "unknown"
    writeconfig
    log done.
-=======
-   log "Done"
-   log "Operator= $opts(operator)"
-   log "Delta= $opts(delta)"
-   log "Threshold= $opts(threshold)"
-} {
-   log "Creating default config."
-   set opts(delta) 3
-   set opts(threshold) 3
-   set opts(datadir) ""
-   set opts(operator) "Unknown"
-#   log "Writing config to $configfile"
-#   writeconfig
-   log Done.
->>>>>>> 2dcb54cac63cbd7249beb0f97f86a31daa506643
 }
 #testing stuff starts here.
 
