@@ -14,12 +14,13 @@ Reject if D>T
 Some experimentation shows minimal noise rejection until threshhold is below 0.5
 and/or delta grows over 4. Suggest values of 0.10 and 10.
 
+filter.tcl
+===========
+In progress. I'll write some docs for it once the features stabilize. Right now, adding an interpreter for command line options.
+
 rescale.tcl
 ===========
-Same as filter with an adjustment for photomultiplier sensitivity.
-Scaling performed according to an Excel polynomial fit to data from reading
-and interpolating the RCA chart for the 7102 PMT.
-Possibly deprecated, needs further testing in combination with background zeroing
+removed since we are workign on makign this an option. Functionality is being worked into stock filter.
 
 example.filterrc
 ================
