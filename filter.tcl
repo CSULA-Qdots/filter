@@ -184,6 +184,7 @@ proc charoptions {optstring} {
 global opts
    #stub
    log "charoptions: $optstring"
+   log "charoptions is not yet implimented."
 }
 
 proc parseargs {} {
