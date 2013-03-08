@@ -1,3 +1,4 @@
+%Zero 1.0
 function zero (input)
 	% This segment of the code splits up the input into multiple strings
 
@@ -85,7 +86,7 @@ function zero (input)
         % the period are put into the character array called new. This
         % array is then concatenated with _corrected.dat, and that is our
         % filename.
-        
+
         ar = char(fileName);
 		 index_name = 1;
 		 is_Period = 0;
