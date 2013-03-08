@@ -12,10 +12,10 @@ do
 	echo "dataStructure = importdata(char('$i'));" > $tmpMatFile
 	echo "${matFunction}(dataStructure.data)" >> $tmpMatFile
 #	echo "${matFunction}(dataStructure.data(:,1),dataStructure.data(:,3))" >> $tmpMatFile
-	echo pause >> $tmpMatFile
 #	${matlabExecutable} -nojvm -nodisplay -nosplash &>> $logFile < $tmpMatFile
 #	Wait option prevents running the loop concurrently, as "matlab" is actually a launcher script
 	${matlabExecutable} -nosplash < $tmpMatFile
+	read -p "Press enter to run next file "
 done
 cat $tmpMatFile
 rm $tmpMatFile
