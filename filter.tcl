@@ -5,12 +5,12 @@
 
 proc writeconfig {} {
 global opts
-set configfilename [file join "~" ".filterrc"]
+set configfilename [file join "~" ".filterrc2"]
 set configfile [open $configfilename w]
 
    log "writing config to $configfilename"
    foreach {option value} [array get opts] {
-      puts $configfile "set opts($option) $value"
+      puts $configfile "setopt $option $value"
       log "Writeconfig: $option = $value"
    }
 }
@@ -163,6 +163,29 @@ global opts
    close $rejects
 }
 
+# Syntactic sugar for dealing with options
+proc setopt {option {value 1}} {
+global opts
+   set opts($option) $value
+}
+
+proc getopt {option} {
+global opts
+   if {[llength [array names opts -exact $option]] == 0} {
+      return 0
+   } {
+      return $opts($option)
+   }
+}
+
+proc logopts {} {
+global opts
+   log "Options in effect:"
+   foreach {option value} [array get opts] {
+      log "--$option=$value"
+   }
+}
+
 # command line Parsing
 proc setoption {optstring} {
 global opts
@@ -225,22 +248,15 @@ set readstdin 0
 # start of global initilization
 set currentdata(comment) empty.
 startlog [file dirname argv0]
-set configfile [file join "~" ".filterrc"]
+set configfile [file join "~" ".filterrc2"]
 log "config file: [file nativename $configfile]"
 if [file exists $configfile] {
    log "reading configuration from $configfile"
    source $configfile
-   log "done"
-   log "operator= $opts(operator)"
-   log "delta= $opts(delta)"
-   log "threshold= $opts(threshold)"
 } {
-   log "creating default config."
-   set opts(delta) 10
-   set opts(threshold) 0.1
-   set opts(operator) "unknown"
-   writeconfig
-   log done.
+   log "FATAL ERROR: No .filterrc2 found."
+   closelog
+   exit
 }
 #testing stuff starts here.
 

@@ -31,14 +31,14 @@ all things after this are treated as filenames.
 Order isn't important unless you have some wierd filenames that look like options. Options on the command line over-ride those in the defaults file.
 
 Options list:
-+ delta
-+ threshold
-+ operator
++ delta (integer)
++ threshold (float)
++ operator "Your Full Name"
 + rescale (not yet implimented)
 
 rescale.tcl
 ===========
-removed since we are workign on makign this an option. Functionality is being worked into stock filter.
+Removed since we are workign on makign this an option. Functionality is being worked into stock filter.
 
 example.filterrc
 ================

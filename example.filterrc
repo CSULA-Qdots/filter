@@ -1,4 +1,0 @@
-#Copy this to your home directory and customize.
-set opts(operator) "YOUR NAME HERE"
-set opts(delta) 10
-set opts(threshold) 0.10
