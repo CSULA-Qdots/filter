@@ -1,0 +1,4 @@
+#Copy this to your home directory and customize.
+setopts operator "YOUR NAME HERE"
+setopt delta 10
+setopt threshold 0.10
