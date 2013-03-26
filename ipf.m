@@ -3,8 +3,7 @@ function ipf(arg1,arg2,arg3,arg4)
 % vectors, or in a single y vector, or in a 2xn or nx2 data matrix with
 % x values in row/column 1 and y values in row/column 2 (e.g. [x y]).
 % Press K key for list of keyboard commands.
-% Version 9.1 Adds fixed-position Gaussians (shape 16) and
-% fixed-position Lorentzians (shape 17). 
+% Version 9.2: Bug fixes; Reorganized peak shape table ('-' key)
 % Adds peak shape selection menu ( activated by '-' key)
 % Version 9.02: Accepts additional input arguments to set initial focus
 %  on the data segment 'window' points wide, centered at x=center.
@@ -19,7 +18,7 @@ function ipf(arg1,arg2,arg3,arg4)
 %   ipf(x,y,center,window);
 % See http://terpconnect.umd.edu/~toh/spectrum/CurveFittingC.html
 % See http://www.wam.umd.edu/~toh/spectrum/InteractivePeakFitter.htm
-% T. C. O'Haver (toh@umd.edu). Version 9.1, February 2013.
+% T. C. O'Haver (toh@umd.edu). Version 9.2, March 2013.
 %
 % Example 1: 
 % x=[0:.005:1];y=humps(x).^3;ipf(x,y)
@@ -78,7 +77,7 @@ function ipf(arg1,arg2,arg3,arg4)
 % Fit single bootstrap........n  Fits siNgle bootstrap sub-sample
 % Prints list of commands.....k
 global X Y xx yy xo dx NumPeaks NumTrials Shape AA PEAKHEIGHTS xxx 
-global start extra delta AUTOZERO SavedSignal logplot FIXEDWIDTHS 
+global start extra delta AUTOZERO SavedSignal logplot FIXEDPARAMETERS 
 %
 format short g
 format compact
@@ -191,7 +190,7 @@ AA=zeros(NumPeaks,200);
 AUTOZERO=0; % Sets autozero operation. Press T to toggle AUTOZERO off and on.
 logplot=0;
 SavedSignal=Y;
-FIXEDWIDTHS=0;
+FIXEDPARAMETERS=0;
 
 % Plot the signal and its fitted components and residuals
 [xx,yy,start]=RedrawSignal(X,Y,xo,dx,NumPeaks);
@@ -206,9 +205,8 @@ uicontrol('Style','text')
 % ----------------------------SUBFUNCTIONS--------------------------------
 function ReadKey(obj,eventdata)
 % Interprets key presses from the Figure window.
-global X Y xx yy xo dx start FitResults NumPeaks NumTrials Shape residual FIXEDWIDTHS
+global X Y xx yy xo dx start FitResults NumPeaks NumTrials Shape residual FIXEDPARAMETERS
 global delta AA xxx PEAKHEIGHTS AUTOZERO extra MeanFitError SavedSignal logplot et
-global FIXEDPOSITIONS
 % When a key is pressed, interprets key and calls corresponding function.
 % Note: If you don't like my key assignments, you can change the numbers
 % in the case statements here to re-assign that function to any other key.
@@ -304,7 +302,7 @@ if isscalar(key),
                 for pk=1:NumPeaks,
                     fixedstart(pk)=start(2*pk-1);
                 end
-                peakfit([xx;yy],0,0,NumPeaks,Shape,extra,1,start,AUTOZERO,fixedparameters);
+                peakfit([xx;yy],0,0,NumPeaks,Shape,extra,1,start,AUTOZERO,FIXEDPARAMETERS);
             end
             % [FitResults,MeanFitError]=peakfit([xx;yy],0,0,NumPeaks,Shape,extra,1,start);
             [FitResults,MeanFitError]=FitAndPlot(xx,yy,NumPeaks,Shape,delta,start,extra);
@@ -489,14 +487,14 @@ if isscalar(key),
                     inputwidth=input('Peak width: ');
                     if isempty(inputwidth),
                     else
-                        FIXEDWIDTHS=inputwidth;
+                        FIXEDPARAMETERS=inputwidth;
                     end
                 case 76 % When ';' key is pressed, peak shape is set to FWLorentzian.
                     n=12;
                     inputwidth=input('Peak width: ');
                     if isempty(inputwidth),
                     else
-                        FIXEDWIDTHS=inputwidth;
+                        FIXEDPARAMETERS=inputwidth;
                     end
                 case 96 % When '`' key is pressed, peak shape is set to Gauss/Lorentz blend
                     n=13;
@@ -509,14 +507,14 @@ if isscalar(key),
                     inputpositions=input('Peak positions as a vector, e.g. [200 400 600]: ');
                     if isempty(inputpositions),
                     else
-                        FIXEDPOSITIONS=inputpositions;
+                        FIXEDPARAMETERS=inputpositions;
                     end
                 case 123 % When 'Shift-[' key is pressed, peak shape is set to
                     n=17;
                     inputpositions=input('Peak positions as a vector, e.g. [200 400 600]: ');
                     if isempty(inputpositions),
                     else
-                        FIXEDPOSITIONS=inputpositions;
+                        FIXEDPARAMETERS=inputpositions;
                     end
                 otherwise
             end
@@ -565,24 +563,27 @@ if isscalar(key),
             end % if
         case 45 % if '-' key pressed
             disp(' ')
-            disp('Select the peak shape of the model (type 1-15 and press Enter key):')
-            disp('1  Gaussian (default): y=exp(-((x-pos)./(0.6005615.*wid)) .^2) with independent widths')
-            disp('2  Lorentzian: y=ones(size(x))./(1+((x-pos)./(0.5.*width)).^2) with independent widths')
-            disp('3  logistic: n=exp(-((x-pos)/(.477.*wid)).^2); y=(2.*n)./(1+n)')
-            disp('4  Pearson: y=ones(size(x))./(1+((x-pos)./((0.5.^(2/m)).*wid)).^2).^m')
-            disp('5  exponentional-broadened Gaussian: Gaussian convoluted with exp(-(1:length(y))./extra) ')
-            disp('6  equal-width Gaussians: two or more Gaussians with the same widths')
-            disp('7  equal-width Lorentzians: two or more Lorentzians with the same widths')
-            disp('8  exponentionally broadened equal-width Gaussian: same as 5 with all peak widths equal.')
-            disp('9  exponential pulse: y=exp(-tau1.*x).*(1-exp(-tau2.*x))')
-            disp('10 sigmoid: y=1/2 + 1/2* erf((x-t1)/sqrt(2*t2))')
-            disp('11 fixed-width Gaussian: two or more Gaussians with preset fixed widths')
-            disp('12 fixed-width Lorentzian: two or more Lorentzians with preset fixed widths')
-            disp('13 Gaussian/Lorentzian blend: blended sum of Gaussian and Loeentzian functions')
-            disp('14 biGaussian: Asymmetrical Gaussians with unequal half-widths on both sides.')
-            disp('15 biLorentzian: Asymmetrical Lorentzians with unequal half-widths on both sides.')
-            disp('16 fixed-position Gaussian.')
-            disp('17 fixed-position Lorentzian.')
+            disp('Select the peak shape of the model (type 1-17 and press Enter key):')
+            disp('Gaussian: y=exp(-((x-pos)./(0.6005615.*width)) .^2)')
+            disp('  Gaussians with independent positions and widths : 1 (default)')
+            disp('  Exponentional-broadened Gaussian : 5 ')
+            disp('  Exponentional-broadened equal-width Gaussian : 8')
+            disp('  Gaussians with the same widths : 6')
+            disp('  Gaussians with preset fixed widths : 11')
+            disp('  Fixed-position Gaussians : 16 ')
+            disp('  Asymmetrical Gaussians with unequal half-widths on both sides : 14')      
+            disp('Lorentzian: y=ones(size(x))./(1+((x-pos)./(0.5.*width)).^2)')
+            disp('  Lorentzians with independent positions and widths : 2')
+            disp('  Equal-width Lorentzians : 7  ')
+            disp('  Fixed-width Lorentzian : 12')
+            disp('  Fixed-position Lorentzian : 17')
+            disp('  Asymmetrical Lorentzians with unequal half-widths on both sides : 15')
+            disp('Blended sum of Gaussian and Lorentzian functions : 13')
+            disp('Logistic: n=exp(-((x-pos)/(.477.*wid)).^2); y=(2.*n)./(1+n) : 3  ')
+            disp('Pearson: y=ones(size(x))./(1+((x-pos)./((0.5.^(2/m)).*wid)).^2).^m : 4')
+            disp('Exponential pulse: y=exp(-tau1.*x).*(1-exp(-tau2.*x)) : 9')
+            disp('Sigmoid: y=1/2 + 1/2* erf((x-t1)/sqrt(2*t2)) : 10')
+            disp(' ')
             Shapeinput=input('Peak shape number: ');
             if isempty(Shape),
             else
@@ -617,14 +618,14 @@ if isscalar(key),
                     inputwidth=input('Peak width: ');
                     if isempty(inputwidth),
                     else
-                        FIXEDWIDTHS=inputwidth;
+                        FIXEDPARAMETERS=inputwidth;
                     end
                 case 12
                     ShapeString='Fixed-width Lorentzian';
                     inputwidth=input('Peak width: ');
                     if isempty(inputwidth),
                     else
-                        FIXEDWIDTHS=inputwidth;
+                        FIXEDPARAMETERS=inputwidth;
                     end
                 case 13
                     ShapeString='Gauss/Lorentz blend';
@@ -637,14 +638,14 @@ if isscalar(key),
                     inputpositions=input('Peak positions as a vector, e.g. [200 400 600]: ');
                     if isempty(inputpositions),
                     else
-                        FIXEDPOSITIONS=inputpositions;
+                        FIXEDPARAMETERS=inputpositions;
                     end
                 case 17
                     ShapeString='Fixed-position Lorentzians';
                     inputpositions=input('Peak positions as a vector, e.g. [200 400 600]: ');
                     if isempty(inputpositions),
                     else
-                        FIXEDPOSITIONS=inputpositions;
+                        FIXEDPARAMETERS=inputpositions;
                     end
                 otherwise
             end % switch
@@ -739,7 +740,7 @@ if isscalar(key),
             [xx,yy,start]=RedrawSignal(X,Y,xo,dx,NumPeaks);
         case 107
             % When 'k' key is pressed, prints out table of keyboar commands
-            disp('KEYBOARD CONTROLS (Version 9):')
+            disp('KEYBOARD CONTROLS (Version 9.2):')
             disp(' Pan signal left and right...Coarse: < and >')
             disp('                             Fine: left and right cursor arrow keys')
             disp('                             Nudge: [ ] ')
@@ -788,10 +789,10 @@ if isscalar(key),
             window=max(xx)-min(xx);
             disp(['Best of ' num2str(NumTrials) ' trial fits.' ])
              if Shape==16||Shape==17, % Fixed-position shapes
-                    fixedparameters=FIXEDPOSITIONS;
+                    fixedparameters=FIXEDPARAMETERS;
                 else
-                     fixedparameters=FIXEDWIDTHS;
-                end 
+                     fixedparameters=FIXEDPARAMETERS;
+             end 
             tic
             [FitResults,MeanFitError]=peakfit([X',Y'],center,window,NumPeaks,Shape,extra,NumTrials,start,AUTOZERO,fixedparameters);
             et=toc;
@@ -817,7 +818,7 @@ if isscalar(key),
             end
              disp(['ipf(datamatrix,' num2str(center) ',' num2str(window) ')']);
             if Shape==11||12,
-               disp(['[FitResults,MeanFitError]=peakfit(datamatrix,' num2str(center) ',' num2str(window) ',' num2str(NumPeaks) ',' num2str(Shape) ',' num2str(extra) ',' num2str(NumTrials) ', [' num2str(FirstGuess) '], ' num2str(AUTOZERO) ', ' num2str(FIXEDWIDTHS) ' ) ' ]);
+               disp(['[FitResults,MeanFitError]=peakfit(datamatrix,' num2str(center) ',' num2str(window) ',' num2str(NumPeaks) ',' num2str(Shape) ',' num2str(extra) ',' num2str(NumTrials) ', [' num2str(FirstGuess) '], ' num2str(AUTOZERO) ', ' num2str(FIXEDPARAMETERS) ' ) ' ]);
             else
                disp(['[FitResults,MeanFitError]=peakfit(datamatrix,' num2str(center) ',' num2str(window) ',' num2str(NumPeaks) ',' num2str(Shape) ',' num2str(extra) ',' num2str(NumTrials) ', [' num2str(FirstGuess) '], ' num2str(AUTOZERO) ' ) ']);
             end
@@ -872,7 +873,7 @@ if isscalar(key),
             end
             disp(['Number of peaks = ' num2str(NumPeaks)])
             if Shape==4||Shape==5||Shape==8||Shape==13||Shape==14||Shape==15, disp(['Extra = ' num2str(extra)]), end
-            if Shape==11||Shape==12, disp(['Fixed Peak Width = ' num2str(FIXEDWIDTHS)]), end
+            if Shape==11||Shape==12, disp(['Fixed Peak Width = ' num2str(FIXEDPARAMETERS)]), end
             disp(['Fitted x range = ' num2str(min(xx)) ' - ' num2str(max(xx)) ' (dx=' num2str(max(xx)-min(xx)) ')  (Center=' num2str((max(xx)+min(xx))/2) ')  ' ])
             disp(['Percent Fitting Error = ' num2str(MeanFitError) '%     Elapsed time = '  num2str(et) ' sec.' ])
             if Shape==9||Shape==10,
@@ -922,7 +923,7 @@ if isscalar(key),
                         end
                         n=n+1;
                     end
-                    [FitResults,BootFitError]=peakfit([bx,by],center,window,NumPeaks,Shape,extra,NumTrialsBoot,start);
+                    [FitResults,BootFitError]=peakfit([bx,by],center,window,NumPeaks,Shape,extra,NumTrialsBoot,start,AUTOZERO,FIXEDPARAMETERS);
                     for peak=1:NumPeaks,
                         BootstrapResultsMatrix(:,trial,peak)=FitResults(peak,:);
                         BootstrapErrorMatrix(:,trial,peak)=BootFitError;
@@ -958,7 +959,7 @@ if isscalar(key),
                 disp('-------------------------------------------------------------------')
             end
             figure(1)
-            title('ipf 9.1  Typical Bootstrap sample fit')
+            title('ipf 9.2  Typical Bootstrap sample fit')
         case 110 % When 'n' key is pressed (Added on version 8)
             disp('Fit to single bootstrap sample')
             tic;
@@ -976,7 +977,7 @@ if isscalar(key),
                 end
                 n=n+1;
             end
-            [FitResults,MeanFitError]=peakfit([bx,by],center,window,NumPeaks,Shape,extra,NumTrialsBoot,start);
+            [FitResults,MeanFitError]=peakfit([bx,by],center,window,NumPeaks,Shape,extra,NumTrialsBoot,start,AUTOZERO,FIXEDPARAMETERS);
             disp(['Fitting Error = ' num2str(MeanFitError) '%'])
             if Shape==9||Shape==10,
                 disp('         Peak#     Tau1         Height       Tau2          Area');
@@ -985,7 +986,7 @@ if isscalar(key),
             end
             disp(FitResults)
             figure(1)
-            title('ipf 9.1  Single Bootstrap sample fit')
+            title('ipf 9.2  Single Bootstrap sample fit')
         otherwise
             UnassignedKey=double(key)
             disp('Press k to print out list of keyboard commands')
@@ -1042,13 +1043,13 @@ lyy=min(yy);
 uyy=max(yy)+(max(yy)-min(yy))/10;
 switch AUTOZERO,
     case 0
-        title('ipf 9.1 Autozero OFF. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Autozero OFF. Pan and Zoom to isolate peaks to be fit in upper window.')
         if lyy<uyy;axis([X(Startx) X(Endx) lyy uyy ]);end
     case 1
-        title('ipf 9.1 Linear autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Linear autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
         if lyy<uyy;axis([X(Startx) X(Endx) lyy uyy ]);end
     case 2
-        title('ipf 9.1 Quadratic autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Quadratic autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
         if lyy<uyy;axis([X(Startx) X(Endx) lyy uyy ]);end
 end
 hold on
@@ -1102,12 +1103,12 @@ function [FitResults,MeanFitError]=FitAndPlot(xx,yy,NumPeaks,Shape,delta,start,e
 % "NumPeaks" component peaks of shape "Shape", starting with start values
 % "start", then plots residuals in lower half.
 %  T. C. O'Haver (toh@umd.edu),  Version 2.2,  October, 2011.
-global PEAKHEIGHTS AUTOZERO AA xxx residual FIXEDWIDTHS FIXEDPOSITIONS
+global PEAKHEIGHTS AUTOZERO AA xxx residual FIXEDPARAMETERS
 PEAKHEIGHTS=zeros(1,NumPeaks);
 n=length(xx);
 x0=min(xx);
 % Perform peak fitting for selected peak shape using fminsearch function
-options = optimset('TolX',.00001,'Display','off' );
+options = optimset('TolX',.000001,'TolFun',.000001,'Display','off' );
 tic
 switch Shape
     case 1
@@ -1235,11 +1236,11 @@ for m=1:NumPeaks,
             A(m,:)=sigmoid(xx,FitParameters(2*m-1),FitParameters(2*m));
             AA(m,:)=sigmoid(xxx,FitParameters(2*m-1),FitParameters(2*m));
         case 11
-            A(m,:)=gaussian(xx,FitParameters(m),FIXEDWIDTHS);
-            AA(m,:)=gaussian(xxx,FitParameters(m),FIXEDWIDTHS);
+            A(m,:)=gaussian(xx,FitParameters(m),FIXEDPARAMETERS);
+            AA(m,:)=gaussian(xxx,FitParameters(m),FIXEDPARAMETERS);
         case 12
-            A(m,:)=lorentzian(xx,FitParameters(m),FIXEDWIDTHS);
-            AA(m,:)=lorentzian(xxx,FitParameters(m),FIXEDWIDTHS);
+            A(m,:)=lorentzian(xx,FitParameters(m),FIXEDPARAMETERS);
+            AA(m,:)=lorentzian(xxx,FitParameters(m),FIXEDPARAMETERS);
          case 13
             A(m,:)=GL(xx,FitParameters(2*m-1),FitParameters(2*m),extra);
             AA(m,:)=GL(xxx,FitParameters(2*m-1),FitParameters(2*m),extra);
@@ -1250,11 +1251,11 @@ for m=1:NumPeaks,
             A(m,:)=BiLorentzian(xx,FitParameters(2*m-1),FitParameters(2*m),extra);
             AA(m,:)=BiLorentzian(xxx,FitParameters(2*m-1),FitParameters(2*m),extra);
          case 16
-            A(m,:)=gaussian(xx,FIXEDPOSITIONS(m),FitParameters(m));
-            AA(m,:)=gaussian(xxx,FIXEDPOSITIONS(m),FitParameters(m));
+            A(m,:)=gaussian(xx,FIXEDPARAMETERS(m),FitParameters(m));
+            AA(m,:)=gaussian(xxx,FIXEDPARAMETERS(m),FitParameters(m));
         case 17
-            A(m,:)=lorentzian(xx,FIXEDPOSITIONS(m),FitParameters(m));
-            AA(m,:)=lorentzian(xxx,FIXEDPOSITIONS(m),FitParameters(m));
+            A(m,:)=lorentzian(xx,FIXEDPARAMETERS(m),FitParameters(m));
+            AA(m,:)=lorentzian(xxx,FIXEDPARAMETERS(m),FitParameters(m));
         otherwise
     end % switch
 end % for
@@ -1286,11 +1287,11 @@ else
 end
 switch AUTOZERO,
     case 0
-        title('ipf 9.1 Autozero OFF. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Autozero OFF. Pan and Zoom to isolate peaks to be fit in upper window.')
     case 1
-        title('ipf 9.1 Linear autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Linear autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
     case 2
-        title('ipf 9.1 Quadratic autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
+        title('ipf 9.2 Quadratic autozero. Pan and Zoom to isolate peaks to be fit in upper window.')
 end
 xlabel('Vertical dotted lines indicate first guess peak positions. C to customize.');
 % Bottom half of the figure shows the residuals and displays RMS error
@@ -1324,10 +1325,10 @@ for m=1:NumPeaks,
             FitResults=[[round(m) FitParameters(m) PEAKHEIGHTS(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if Shape==11||Shape==12, % Fixed-width shapes
-                FitResults=[[round(m) FitParameters(m) PEAKHEIGHTS(m) FIXEDWIDTHS area(m)]];
+                FitResults=[[round(m) FitParameters(m) PEAKHEIGHTS(m) FIXEDPARAMETERS area(m)]];
             else
                 if Shape==16||Shape==17, % Fixed-position shapes
-                     FitResults=[[round(m) FIXEDPOSITIONS(m) PEAKHEIGHTS(m) FitParameters(m) area(m)]];
+                     FitResults=[[round(m) FIXEDPARAMETERS(m) PEAKHEIGHTS(m) FitParameters(m) area(m)]];
                 else
                     FitResults=[[round(m) FitParameters(2*m-1) PEAKHEIGHTS(m) abs(FitParameters(2*m)) area(m)]];
                 end
@@ -1338,10 +1339,10 @@ for m=1:NumPeaks,
             FitResults=[FitResults ; [round(m) FitParameters(m) PEAKHEIGHTS(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if Shape==11||Shape==12, % Fixed-width shapes
-                FitResults=[FitResults ; [round(m) FitParameters(m) PEAKHEIGHTS(m) FIXEDWIDTHS area(m)]];
+                FitResults=[FitResults ; [round(m) FitParameters(m) PEAKHEIGHTS(m) FIXEDPARAMETERS area(m)]];
             else
                 if Shape==16||Shape==17, % Fixed-position shapes
-                     FitResults=[FitResults ; [round(m) FIXEDPOSITIONS(m) PEAKHEIGHTS(m) FitParameters(m) area(m)]]; 
+                     FitResults=[FitResults ; [round(m) FIXEDPARAMETERS(m) PEAKHEIGHTS(m) FitParameters(m) area(m)]]; 
                 else
                     FitResults=[FitResults ; [round(m) FitParameters(2*m-1) PEAKHEIGHTS(m) abs(FitParameters(2*m)) area(m)]];
                 end
@@ -1382,13 +1383,14 @@ end
 % ----------------------------------------------------------------------
 function [FitResults,LowestError,BestStart,xi,yi,BootResults]=peakfit(signal,center,window,NumPeaks,peakshape,extra,NumTrials,start,AUTOZERO,fixedparameters,plots)
 % Version 3.6: February, 2013. 
-global AA xxx PEAKHEIGHTS FIXEDWIDTHS FIXEDPOSITIONS
+global AA xxx PEAKHEIGHTS FIXEDPARAMETERS
 
 format short g
 format compact
 warning off all
 
 NumArgOut=nargout;
+plots=1;
 datasize=size(signal);
 if datasize(1)<datasize(2),signal=signal';end
 datasize=size(signal);
@@ -1412,7 +1414,7 @@ end
 % Isolate desired segment from data set for curve fitting
 if nargin==1 || nargin==2,center=(max(X)-min(X))/2;window=max(X)-min(X);end
 xoffset=center-window/2;
-xoffset=0;
+% xoffset=0;
 n1=val2ind(X,center-window/2);
 n2=val2ind(X,center+window/2);
 if window==0,n1=1;n2=length(X);end
@@ -1420,83 +1422,13 @@ xx=X(n1:n2)-xoffset;
 yy=Y(n1:n2);
 ShapeString='Gaussian';
 
-% Define values of any missing arguments
-switch nargin
-    case 1
-        NumPeaks=1;
-        peakshape=1;
-        extra=0;
-        NumTrials=1;
-        xx=X;yy=Y;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        plots=1;
-    case 2
-        NumPeaks=1;
-        peakshape=1;
-        extra=0;
-        NumTrials=1;
-        xx=signal;yy=center;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        plots=1;
-    case 3
-        NumPeaks=1;
-        peakshape=1;
-        extra=0;
-        NumTrials=1;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 4
-        peakshape=1;
-        extra=0;
-        NumTrials=1;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 5
-        extra=0;
-        NumTrials=1;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 6
-        NumTrials=1;
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 7
-        start=calcstart(xx,NumPeaks,xoffset);
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 8
-        AUTOZERO=1;
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 9
-        FIXEDWIDTHS=0;
-        plots=1;
-    case 10
-        FIXEDWIDTHS=fixedparameters;
-        plots=1;
-    case 11
-        FIXEDWIDTHS=fixedparameters;
-    otherwise
-end % switch nargin
-
 % Default values for placeholder zeros
 if NumTrials==0;NumTrials=1;end
 if peakshape==0;peakshape=1;end
 if NumPeaks==0;NumPeaks=1;end
 if start==0;start=calcstart(xx,NumPeaks,xoffset);end
-if FIXEDWIDTHS==0, FIXEDWIDTHS=length(xx)/10;end
-if peakshape==16;FIXEDPOSITIONS=fixedparameters;end
+if FIXEDPARAMETERS==0, FIXEDPARAMETERS=length(xx)/10;end
+if peakshape==16;FIXEDPARAMETERS=fixedparameters;end
 
 % Remove linear baseline from data segment if AUTOZERO==1
 bkgsize=round(length(xx)/10);
@@ -1524,10 +1456,10 @@ end % if autozero
 PEAKHEIGHTS=zeros(1,NumPeaks);
 n=length(xx);
 newstart=start;
-% for peaks=1:NumPeaks,
-%      peakindex=2*peaks-1;
-%      newstart(peakindex)=start(peakindex)-xoffset;
-% end
+for peaks=1:NumPeaks,
+     peakindex=2*peaks-1;
+     newstart(peakindex)=start(peakindex)-xoffset;
+end
 
 % Assign ShapStrings
 switch peakshape
@@ -1576,6 +1508,7 @@ BestStart=zeros(1,NumPeaks.*2);
 height=zeros(1,NumPeaks); 
 bestmodel=zeros(size(yy));
 for k=1:NumTrials, 
+    %   disp(num2str(newstart)) %%%%%%%%%%%%%%%%%%%
     % disp(['Trial number ' num2str(k) ] ) % optionally prints the current trial number as progress indicator
   switch peakshape
     case 1
@@ -1675,9 +1608,9 @@ for m=1:NumPeaks,
         case 10
             A(m,:)=sigmoid(xx,TrialParameters(2*m-1),TrialParameters(2*m));
         case 11
-            A(m,:)=gaussian(xx,TrialParameters(m),FIXEDWIDTHS);
+            A(m,:)=gaussian(xx,TrialParameters(m),FIXEDPARAMETERS);
         case 12
-            A(m,:)=lorentzian(xx,TrialParameters(m),FIXEDWIDTHS);
+            A(m,:)=lorentzian(xx,TrialParameters(m),FIXEDPARAMETERS);
         case 13
             A(m,:)=GL(xx,TrialParameters(2*m-1),TrialParameters(2*m),extra);
         case 14
@@ -1685,16 +1618,16 @@ for m=1:NumPeaks,
         case 15
             A(m,:)=BiLorentzian(xx,TrialParameters(2*m-1),TrialParameters(2*m),extra);        
         case 16
-            A(m,:)=gaussian(xx,FIXEDPOSITIONS(m),TrialParameters(m));
+            A(m,:)=gaussian(xx,FIXEDPARAMETERS(m),TrialParameters(m));
         case 17
-            A(m,:)=lorentzian(xx,FIXEDPOSITIONS(m),TrialParameters(m));
+            A(m,:)=lorentzian(xx,FIXEDPARAMETERS(m),TrialParameters(m));
         otherwise
     end % switch
-%     for parameter=1:2:2*NumPeaks,
-%         newstart(parameter)=newstart(parameter)*(1+randn/50);
-%         newstart(parameter+1)=newstart(parameter+1)*(1+randn/10);
-%     end
-end % for
+    for parameter=1:2:2*NumPeaks,
+        newstart(parameter)=newstart(parameter)*(1+randn/50);
+        newstart(parameter+1)=newstart(parameter+1)*(1+randn/10);
+    end
+end % forc
 
 % Multiplies each row by the corresponding amplitude and adds them up
 model=PEAKHEIGHTS'*A;
@@ -1702,6 +1635,7 @@ model=PEAKHEIGHTS'*A;
 % Compare trial model to data segment and compute the fit error
   MeanFitError=100*norm(yy-model)./(sqrt(n)*max(yy));
   % Take only the single fit that has the lowest MeanFitError
+% disp(['newstart = ' num2str(newstart) '   MeanFitError = ' num2str(MeanFitError) ] ) %%%%%%%%%%%%%%
   if MeanFitError<LowestError, 
       if min(PEAKHEIGHTS)>0,  % Consider only fits with positive peak heights
         LowestError=MeanFitError;  % Assign LowestError to the lowest MeanFitError
@@ -1739,9 +1673,9 @@ for m=1:NumPeaks,
     case 10
         AA(m,:)=sigmoid(xxx,FitParameters(2*m-1),FitParameters(2*m));   
     case 11
-        AA(m,:)=gaussian(xxx,FitParameters(m),FIXEDWIDTHS);
+        AA(m,:)=gaussian(xxx,FitParameters(m),FIXEDPARAMETERS);
     case 12
-        AA(m,:)=lorentzian(xxx,FitParameters(m),FIXEDWIDTHS);
+        AA(m,:)=lorentzian(xxx,FitParameters(m),FIXEDPARAMETERS);
     case 13
         AA(m,:)=GL(xxx,FitParameters(2*m-1),FitParameters(2*m),extra);
     case 14
@@ -1749,9 +1683,9 @@ for m=1:NumPeaks,
     case 15
         AA(m,:)=BiLorentzian(xxx,FitParameters(2*m-1),FitParameters(2*m),extra);       
     case 16
-        AA(m,:)=gaussian(xxx,FIXEDPOSITIONS(m),FitParameters(m));
+        AA(m,:)=gaussian(xxx,FIXEDPARAMETERS(m),FitParameters(m));
     case 17
-        AA(m,:)=lorentzian(xxx,FIXEDPOSITIONS(m),FitParameters(m));
+        AA(m,:)=lorentzian(xxx,FIXEDPARAMETERS(m),FitParameters(m));
        otherwise
   end % switch
 end % for
@@ -1790,11 +1724,11 @@ if plots,
     axis([min(xx)+xoffset max(xx)+xoffset min(yy) max(yy)]);
     switch AUTOZERO,
         case 0
-            title('Peakfit 3.6 Autozero OFF.')
+            title('ipf 9.2 Autozero OFF.')
         case 1
-            title('Peakfit 3.6 Linear autozero.')
+            title('ipf 9.2 Linear autozero.')
         case 2
-            title('Peakfit 3.6 Quadratic autozero.')
+            title('ipf 9.2 Quadratic autozero.')
     end
     if peakshape==4||peakshape==5||peakshape==8||peakshape==13||peakshape==14||peakshape==15, % Shapes with Extra factor
         xlabel(['Peaks = ' num2str(NumPeaks) '     Shape = ' ShapeString '     Error = ' num2str(round(100*LowestError)/100) '%    Extra = ' num2str(extra) ] )
@@ -1818,10 +1752,10 @@ for m=1:NumPeaks,
             FitResults=[[round(m) FitParameters(m)+xoffset height(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if peakshape==11||peakshape==12, % Fixed-width shapes only
-                FitResults=[[round(m) FitParameters(m)+xoffset height(m) FIXEDWIDTHS area(m)]];
+                FitResults=[[round(m) FitParameters(m)+xoffset height(m) FIXEDPARAMETERS area(m)]];
             else
                 if peakshape==16||peakshape==17, % Fixed-position shapes only
-                    FitResults=[round(m) FIXEDPOSITIONS(m) height(m) FitParameters(m) area(m)];
+                    FitResults=[round(m) FIXEDPARAMETERS(m) height(m) FitParameters(m) area(m)];
                 else
                     FitResults=[round(m) FitParameters(2*m-1)+xoffset height(m) abs(FitParameters(2*m)) area(m)];
                 end
@@ -1832,10 +1766,10 @@ for m=1:NumPeaks,
             FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if peakshape==11||peakshape==12, % Fixed-width shapes only
-                FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) FIXEDWIDTHS area(m)]];
+                FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) FIXEDPARAMETERS area(m)]];
             else
                 if peakshape==16||peakshape==17, % Fixed-position shapes only
-                    FitResults=[FitResults ; [round(m) FIXEDPOSITIONS(m) height(m) FitParameters(m) area(m)]];
+                    FitResults=[FitResults ; [round(m) FIXEDPARAMETERS(m) height(m) FitParameters(m) area(m)]];
                 else
                     FitResults=[FitResults ; [round(m) FitParameters(2*m-1)+xoffset height(m) abs(FitParameters(2*m)) area(m)]];
                 end
@@ -1885,7 +1819,7 @@ if NumArgOut==6,
             n=n+1;
         end
         bx=bx+xoffset;
-        [FitResults,BootFitError]=fitpeaks(bx,by,NumPeaks,peakshape,extra,NumTrials,start,AUTOZERO,FIXEDWIDTHS);
+        [FitResults,BootFitError]=fitpeaks(bx,by,NumPeaks,peakshape,extra,NumTrials,start,AUTOZERO,FIXEDPARAMETERS);
         for peak=1:NumPeaks,
             BootstrapResultsMatrix(:,trial,peak)=FitResults(peak,:);
             BootstrapErrorMatrix(:,trial,peak)=BootFitError;
@@ -1920,11 +1854,11 @@ end % if NumArgOut==6,
 % ----------------------------------------------------------------------
 function [FitResults,LowestError]=fitpeaks(xx,yy,NumPeaks,peakshape,extra,NumTrials,start,AUTOZERO,fixedparameters)
 % Based on peakfit Version 3: June, 2012. 
-global PEAKHEIGHTS FIXEDWIDTHS FIXEDPOSITIONS
+global PEAKHEIGHTS FIXEDPARAMETERS
 format short g
 format compact
 warning off all
-FIXEDWIDTHS=fixedparameters;
+FIXEDPARAMETERS=fixedparameters;
 xoffset=0;
 if start==0;start=calcstart(xx,NumPeaks,xoffset);end
 PEAKHEIGHTS=zeros(1,NumPeaks);
@@ -1944,6 +1878,7 @@ BestStart=zeros(1,NumPeaks.*2);
 height=zeros(1,NumPeaks); 
 bestmodel=zeros(size(yy));
 for k=1:NumTrials, 
+ % disp(num2str(newstart)) %%%%%%%%%%%%%%%%%%%
   switch peakshape
     case 1
         TrialParameters=fminsearch(@(lambda)(fitgaussian(lambda,xx,yy)),newstart);
@@ -2040,9 +1975,9 @@ for m=1:NumPeaks,
     case 10
         A(m,:)=sigmoid(xx,TrialParameters(2*m-1),TrialParameters(2*m)); 
     case 11
-        A(m,:)=gaussian(xx,TrialParameters(m),FIXEDWIDTHS);
+        A(m,:)=gaussian(xx,TrialParameters(m),FIXEDPARAMETERS);
     case 12
-        A(m,:)=lorentzian(xx,TrialParameters(m),FIXEDWIDTHS); 
+        A(m,:)=lorentzian(xx,TrialParameters(m),FIXEDPARAMETERS); 
     case 13
         A(m,:)=GL(xx,TrialParameters(2*m-1),TrialParameters(2*m),extra);
     case 14
@@ -2050,9 +1985,9 @@ for m=1:NumPeaks,
     case 15
         A(m,:)=BiLorentzian(xx,TrialParameters(2*m-1),TrialParameters(2*m),extra);       
     case 16
-        A(m,:)=gaussian(xx,FIXEDPOSITIONS(m),TrialParameters(m));
+        A(m,:)=gaussian(xx,FIXEDPARAMETERS(m),TrialParameters(m));
     case 17
-        A(m,:)=lorentzian(xx,FIXEDPOSITIONS(m),TrialParameters(m));
+        A(m,:)=lorentzian(xx,FIXEDPARAMETERS(m),TrialParameters(m));
 
    end % switch
     for parameter=1:2:2*NumPeaks,
@@ -2087,7 +2022,7 @@ for m=1:NumPeaks,
             FitResults=[[round(m) FitParameters(m)+xoffset height(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if peakshape==11||peakshape==12,  % Fixed-width shapes only
-                FitResults=[[round(m) FitParameters(m)+xoffset height(m) FIXEDWIDTHS area(m)]];
+                FitResults=[[round(m) FitParameters(m)+xoffset height(m) FIXEDPARAMETERS area(m)]];
             else
                 FitResults=[[round(m) FitParameters(2*m-1)+xoffset height(m) abs(FitParameters(2*m)) area(m)]];
             end
@@ -2097,7 +2032,7 @@ for m=1:NumPeaks,
             FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) abs(FitParameters(NumPeaks+1)) area(m)]];
         else
             if peakshape==11||peakshape==12, % Fixed-width shapes only
-                FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) FIXEDWIDTHS area(m)]];
+                FitResults=[FitResults ; [round(m) FitParameters(m)+xoffset height(m) FIXEDPARAMETERS area(m)]];
             else
                 FitResults=[FitResults ; [round(m) FitParameters(2*m-1)+xoffset height(m) abs(FitParameters(2*m)) area(m)]];
             end
@@ -2150,11 +2085,11 @@ err = norm(z-y');
 % ----------------------------------------------------------------------
 function err = FitFWGaussian(lambda,t,y)
 %	Fitting function for a fixed width Gaussian
-global PEAKHEIGHTS FIXEDWIDTHS
+global PEAKHEIGHTS FIXEDPARAMETERS
 numpeaks=round(length(lambda));
 A = zeros(length(t),numpeaks);
 for j = 1:numpeaks,
-    A(:,j) = gaussian(t,lambda(j),FIXEDWIDTHS)';
+    A(:,j) = gaussian(t,lambda(j),FIXEDPARAMETERS)';
 end
 PEAKHEIGHTS = abs(A\y');
 z = A*PEAKHEIGHTS;
@@ -2162,11 +2097,11 @@ err = norm(z-y');
 % ----------------------------------------------------------------------
 function err = FitFPGaussian(lambda,t,y)
 %	Fitting function for fixed-position Gaussians
-global PEAKHEIGHTS FIXEDPOSITIONS
+global PEAKHEIGHTS FIXEDPARAMETERS
 numpeaks=round(length(lambda));
 A = zeros(length(t),numpeaks);
 for j = 1:numpeaks,
-    A(:,j) = gaussian(t,FIXEDPOSITIONS(j), lambda(j))';
+    A(:,j) = gaussian(t,FIXEDPARAMETERS(j), lambda(j))';
 end
 PEAKHEIGHTS = abs(A\y');
 z = A*PEAKHEIGHTS;
@@ -2174,11 +2109,11 @@ err = norm(z-y');
 % ----------------------------------------------------------------------
 function err = FitFPLorentzian(lambda,t,y)
 %	Fitting function for fixed-position Lorentzians
-global PEAKHEIGHTS FIXEDPOSITIONS
+global PEAKHEIGHTS FIXEDPARAMETERS
 numpeaks=round(length(lambda));
 A = zeros(length(t),numpeaks);
 for j = 1:numpeaks,
-    A(:,j) = lorentzian(t,FIXEDPOSITIONS(j), lambda(j))';
+    A(:,j) = lorentzian(t,FIXEDPARAMETERS(j), lambda(j))';
 end
 PEAKHEIGHTS = abs(A\y');
 z = A*PEAKHEIGHTS;
@@ -2186,11 +2121,11 @@ err = norm(z-y');
 % ----------------------------------------------------------------------
 function err = FitFWLorentzian(lambda,t,y)
 %	Fitting function for fixed width Gaussians
-global PEAKHEIGHTS FIXEDWIDTHS
+global PEAKHEIGHTS FIXEDPARAMETERS
 numpeaks=round(length(lambda));
 A = zeros(length(t),numpeaks);
 for j = 1:numpeaks,
-    A(:,j) = lorentzian(t,lambda(j),FIXEDWIDTHS)';
+    A(:,j) = lorentzian(t,lambda(j),FIXEDPARAMETERS)';
 end
 PEAKHEIGHTS = abs(A\y');
 z = A*PEAKHEIGHTS;
