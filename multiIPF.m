@@ -1,4 +1,4 @@
-function ipf_4(start, num1, num2)
+function multiIPF(start, num1, num2)
     input = importdata(start);
 
 	numFiles = length(input)
