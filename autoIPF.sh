@@ -3,7 +3,7 @@ list_Of_Names=(*.out.dat)
 #Logging doesn't seem necessary when creating a spreadsheet.
 #logFile=log-ipf-$(date +%Y%m%d%H%M%S)
 matlabExecutable=matlab
-matFunction=ipf
+matFunction=ipf_wrapper
 tmpMatFile=$(mktemp)
 for i in ${list_Of_Names[@]}
 do
