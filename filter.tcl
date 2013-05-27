@@ -143,11 +143,11 @@ global currentdata
    } {
       set sortdata {}
       for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
-         lappend sortdata {$i $currentdata($i.$colname)}
+         lappend sortdata [list $i $currentdata($i.$colname)]
       }
       set sortdata [lsort -real -index 1 $sortdata]
       foreach l $sortdata {
-         lappend returndata [lindex 0 $l]
+         lappend returndata [lindex $l 0]
       }
    }
    log "Order: $returndata"
@@ -167,7 +167,7 @@ global opts
    puts $rejects "ev\tcorrected intensity\tdmm kiethley 199"
    set linecount 0
    set rejectcount 0
-   for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+   foreach i $currentdata(sortorder) {
       set output {}
       lappend output [format "%0.12f" $currentdata($i.ev)]
       lappend output [format "%0.12f" $currentdata($i.corrected)]
@@ -300,6 +300,7 @@ foreach fname $filenames {
       log "Building reject list:"
       log [buildrejects]
       log Done.
+      set currentdata(sortorder) [orderby "ev"]
       writedata "[file rootname $fname].out.dat"
       log "Done with file $fname"
    }
