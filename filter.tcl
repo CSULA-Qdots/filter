@@ -201,6 +201,11 @@ global opts
    }
 }
 
+proc optexists {option} {
+global opts
+   return [llength [array names opts -exact $option]]
+}
+
 proc logopts {} {
 global opts
    log "Options in effect:"
@@ -300,7 +305,11 @@ foreach fname $filenames {
       log "Building reject list:"
       log [buildrejects]
       log Done.
-      set currentdata(sortorder) [orderby "ev"]
+      if {[optexists "sortby"]} {
+         set currentdata(sortorder) [orderby [getopt sortby]]
+      } {
+         set currentdata(sortorder) [orderby none]
+      }
       writedata "[file rootname $fname].out.dat"
       log "Done with file $fname"
    }
