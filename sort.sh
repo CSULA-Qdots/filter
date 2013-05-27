@@ -1,16 +1,26 @@
 #!/bin/bash
-tmpfile1=$(mktemp)
-tmpfile2=$(mktemp)
+#Sort data files in ascending numerical order
+
+headTmp=$(mktemp)
+tailTmp=$(mktemp)
+
+echo Sorting $@
+
 for i in $@
 do
-  head -n2 $i > $tmpfile1
-  tail -n +2 $i | sort > $tmpfile2
-#  if $(diff -q $i $tmpfile); then
-  cat $tmpfile1 $tmpfile2 > $i
-#  echo different
-#    else
-#      echo same
-#  fi
+  #sort implements ASCII sorting, thus letters are after numbers
+  #Input file must have numerical portion split out and sorted
+  
+  #Assumes all data follows standard one-line informational header and one line table header
+  head -n2 $i > $headTmp
+
+  #tail reads k'th to last line of file when n option is given as -n +k
+  tail -n +2 $i | sort > $tailTmp
+  
+  #Recombine file header and now-sorted numerical portion
+  cat $headTmp $tailTmp > $i
+
 done
-rm $tmpfile1
-rm $tmpfile2
+
+rm $headTmp
+rm $tailTmp

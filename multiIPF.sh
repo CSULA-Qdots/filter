@@ -1,12 +1,21 @@
 #!/bin/bash
-#Logging doesn't seem necessary when creating a spreadsheet.
-#logFile=log-ipf-$(date +%Y%m%d%H%M%S)
-matlabExecutable=matlab
+#Wrap multiIPF with typical input structure
+
 matFunction=multiIPF
-tmpMatFile=$(mktemp)
-echo "cli params:" $@
-cat $@
-echo "Running function" $matFunction "."
-echo "${matFunction}('${@}',1,2)" >> $tmpMatFile
-${matlabExecutable} -nosplash < $tmpMatFile
-rm $tmpMatFile
+matlabFileList=$(mktemp)
+matlabInputFile=$(mktemp)
+
+#multiIPF requires newline-separated input list within a file
+#Translate literal space characters of input to newline character
+echo $@ | tr ' ' '\n' > $matlabFileList
+
+echo "Running function $matFunction on $@"
+
+#Matlab is difficult to invoke directly from shell, but accepts standard input
+#1,2 indicate energy and intensity columns of data
+echo "${matFunction}('$matlabFileList',1,2)" > $matlabInputFile
+
+matlab -nosplash < $matlabInputFile
+
+rm $matlabInputFile
+rm $matlabFileList
