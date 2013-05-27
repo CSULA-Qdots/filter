@@ -36,6 +36,30 @@ Options list:
 + operator "Your Full Name"
 + rescale (not yet implimented)
 
+MultiIPF instructions:
+Run multiIPF, via mcp.sh or in matlab directly. 
+multiIPF uses 3 parameters: The first is the name of a file that is a list of all the files 
+you want to analyze (which must be in the same directory as multiIPF) The files must include 
+extensions and must be line delimited.
+The second two parameters are the columns in the data files that you wish to analyze. These are columns 1 and 2.
+All the files that are to be analyzed should be sorted, in eV, and no header columns. There is a catch statement that will 
+correct the header columns, but this has not been tested.
+
+multiIPF('FileList.dat', 1, 2)
+
+The program will run ipf on each file. The normal window will appear, asking you to set the number of peaks, baseline, etc.
+Proceed as usual, but after fitting, press = to save your fit results to NewStuff.dat. The name of the file will be saved before your peaks.
+Note that it will be appended, so you should clear NewStuff.dat beforehand. mcp.sh automatically does this.
+Also, if there is an error with the file that should be analyzed, multiIPF will catch it and will report that in NewStuff.dat: 
+'There was an error with this file' and move on.
+
+Caution with =:
+Also note that pressing = the very first time without fitting anything will cause an error: = reads out the FitResults to NewStuff.dat, so 
+if there is no fit, an error will be thrown. A catch statement has been implemented but not tested. If = is pressed accidentally twice after 
+a successful fit, the same list of peaks will be appended again.
+
+After finishing all the files, the program will exit, and the peak results will be in NewStuff.dat.
+
 rescale.tcl
 ===========
 Removed since we are workign on makign this an option. Functionality is being worked into stock filter.
