@@ -1,13 +1,16 @@
 #!/bin/bash
-tmpfile=$(mktemp)
+tmpfile1=$(mktemp)
+tmpfile2=$(mktemp)
 for i in $@
 do
-  sort $i > $tmpfile
-  if $(diff -q $i $tmpfile); then
-      cat $tmpfile > $i
-      echo different;
-    else
-      echo same;
-  fi
+  head -n2 $i > $tmpfile1
+  tail -n +2 $i | sort > $tmpfile2
+#  if $(diff -q $i $tmpfile); then
+  cat $tmpfile1 $tmpfile2 > $i
+#  echo different
+#    else
+#      echo same
+#  fi
 done
-rm $tmpfile
+rm $tmpfile1
+rm $tmpfile2

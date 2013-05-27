@@ -2,11 +2,11 @@
 function zero (input)
 	% This segment of the code splits up the input into multiple strings
 
-	list_names = textscan(input, '%s');
-	list_names = list_names{1};
+	list_names = textscan(input, '%s')
+	list_names = list_names{1}
 
 	% list_names now becomes an array that holds the names of the files
-	numFiles = length(list_names);
+	numFiles = length(list_names)
 
 	% Runs the zeroing for each name submitted
 
@@ -18,11 +18,15 @@ function zero (input)
 
 	function subtractBaseline (fileName)
 		% Grab the data.
-
+        
+        
 		dataStructure = importdata(char(fileName));
 		% The .data part of a structure is the numerical part. Headers will be ignored.
-		signal = dataStructure.data;
-
+		try
+        signal = dataStructure.data;
+        catch e
+            signal = dataStructure;            
+        end
 		% The data, signal, will be an array with 3 columns (wavelength, signal,
 		% and temperature. m gives the number of points. n is 3.
 

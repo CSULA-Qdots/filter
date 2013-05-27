@@ -6,16 +6,25 @@ function multiIPF(start, num1, num2)
 	for i = 1:numFiles
 
 		name = input{i};
+	try
+        signal = dlmread(name, '\t');
+        catch exc
         signal = importdata(name);
+        end
         fileHand = fopen('NewStuff.dat', 'at');
             fprintf(fileHand, '%s\n', name);
         % close the file
 		fclose(fileHand);
-%    try
+    try
         ipf(signal(:,num1), signal(:,num2), 1.35, 150)
         uiwait
-%    catch exc
-%        continue;
+    catch exc
+        fileHandler = fopen('NewStuff.dat', 'at');
+        fprintf(fileHandler, '%s\n', 'There was an error with this file.');
+%        printf("There was an error with file %s\n.", name);
+        fclose(fileHandler);
+    end
+	
 %    end
     end
 
@@ -681,10 +690,14 @@ if isscalar(key),
             end
         case 61        
         fileHandler = fopen('NewStuff.dat', 'at');
+        try
         GiveMe = FitResults(:,1:5);
         [m n] = size(GiveMe);
 		for i = 1:m
             fprintf(fileHandler, '%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n', GiveMe(i,:));
+        end
+        catch exc
+        
         end
 		% close the file
 		fclose(fileHandler);
@@ -761,8 +774,8 @@ if isscalar(key),
                     disp('     x           peak 1        peak 2       peak 3       peak 4       peak 5       peak 6')
                     disp([xxx' PEAKHEIGHTS(1)*AA(1,:)' PEAKHEIGHTS(2)*AA(2,:)' PEAKHEIGHTS(3)*AA(3,:)'  PEAKHEIGHTS(4)*AA(4,:)'  PEAKHEIGHTS(5)*AA(5,:)'  PEAKHEIGHTS(6)*AA(6,:)'])
             end
-        case 61 % When '=' key is pressed
-            PEAKHEIGHKTS
+%        case 61 % When '=' key is pressed
+%            PEAKHEIGHKTS
         case 116
             % When 't' key is pressed, steps through AUTOZERO modes
             AUTOZERO=AUTOZERO+1;

@@ -4,8 +4,9 @@
 matlabExecutable=matlab
 matFunction=multiIPF
 tmpMatFile=$(mktemp)
-echo ${@}
-echo "Running function" $matFunction " on file " $i
+echo "cli params:" $@
+cat $@
+echo "Running function" $matFunction "."
 echo "${matFunction}('${@}',1,2)" >> $tmpMatFile
 ${matlabExecutable} -nosplash < $tmpMatFile
 rm $tmpMatFile
