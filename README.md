@@ -39,6 +39,9 @@ Options list:
 
 Valid column names are: "none", "ev", "lambda", "corrected", "intensity", and "temp". No quotes please.
 
+MultiIPF
+========
+
 MultiIPF instructions:
 Run multiIPF, via mcp.sh or in matlab directly. 
 multiIPF uses 3 parameters: The first is the name of a file that is a list of all the files 
