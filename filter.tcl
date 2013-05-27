@@ -131,6 +131,29 @@ global currentdata
    }
 }
 
+proc orderby {{colname "none"}} {
+global currentdata
+   
+   log "Sorting by $colname"
+   set returndata {}
+   if {[string equal -nocase $colname "none"]} {
+      for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+         lappend returndata $i
+      }
+   } {
+      set sortdata {}
+      for {set i 1} {$i <= $currentdata(linecount)} {incr i} {
+         lappend sortdata {$i $currentdata($i.$colname)}
+      }
+      set sortdata [lsort -real -index 1 $sortdata]
+      foreach l $sortdata {
+         lappend returndata [lindex 0 $l]
+      }
+   }
+   log "Order: $returndata"
+   return $returndata
+}
+
 proc writedata {fname} {
 global currentdata
 global opts

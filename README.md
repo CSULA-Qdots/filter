@@ -35,6 +35,9 @@ Options list:
 + threshold (float)
 + operator "Your Full Name"
 + rescale (not yet implimented)
++ sortby "columnName"
+
+Valid column names are: "none", "ev", "lambda", "corrected", "intensity", and "temp". No quotes please.
 
 MultiIPF instructions:
 Run multiIPF, via mcp.sh or in matlab directly. 
