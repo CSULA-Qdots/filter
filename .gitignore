@@ -4,3 +4,8 @@
 ~*
 *~
 *.asv
+#Ignore data files (you can force them if you need)
+*.dat
+*.rejects
+#Ignore editor swap files
+*.swp
