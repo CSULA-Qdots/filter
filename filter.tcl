@@ -62,6 +62,8 @@ global logfile
    return $logfile
 }
 
+# Data handling
+
 proc runaverage {start end {col "intensity"}} {
 global currentdata
 set sum 0
@@ -284,7 +286,7 @@ if [file exists $configfile] {
 } {
    log "FATAL ERROR: No .filterrc2 found."
    closelog
-   exit
+   exit 1
 }
 #testing stuff starts here.
 
