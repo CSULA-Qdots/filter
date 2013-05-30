@@ -2,9 +2,6 @@
 #Master Control Program
 #Perform all automated analysis and present user with data to fit
 
-echo Filtering data
-tclsh filter.tcl $@
-
 #Remove NewStuff.dat file, containing last run's fits
 #sleep waits 5 seconds for user to realize potential mistake
 if (test -e NewStuff.dat); then
@@ -12,6 +9,9 @@ if (test -e NewStuff.dat); then
   sleep 5
   rm NewStuff.dat
 fi
+
+echo Filtering data
+tclsh filter.tcl $@
 
 #Operate on files output by filter
 #sed (S)earches for ".dat", replacing with ".out.dat", (G)lobally
@@ -22,8 +22,6 @@ outfiles=$(echo ${@} | sed -e "s/.dat/.out.dat/g")
 #  echo Sort failed
 #  exit 1
 #fi
-echo Sorting data
-./sort.sh $outfiles
 
 echo Subtracting GaAs baseline
 ./baseline.sh $outfiles
