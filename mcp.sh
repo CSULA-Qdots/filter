@@ -5,12 +5,12 @@
 #Remove NewStuff.dat file, containing last run's fits
 #sleep waits 5 seconds for user to realize potential mistake
 if [ -e NewStuff.dat ]; then
-  echo Removing NewStuff.dat ... ctrl-C to cancel
+  echo "Removing NewStuff.dat ... ctrl-C to cancel"
   sleep 5
   rm NewStuff.dat
-fi #/NewStuff
+fi #/NewStuff removal
 
-echo Filtering data
+echo "Filtering data"
 #Only continue if Filter prceeded error-free
 if (tclsh filter.tcl $@); then
 
@@ -18,19 +18,19 @@ if (tclsh filter.tcl $@); then
   #sed (s)earches for ".dat", replacing with ".out.dat", (g)lobally
   outfiles=$(echo ${@} | sed -e "s/.dat/.out.dat/g")
 
-  echo Subtracting GaAs baseline
+  echo "Subtracting GaAs baseline"
   #Only continue if Baseline prceeded error-free
   if (bash baseline.sh $outfiles); then
 
     #Operate on files output by baseline
     correctedfiles=$(echo ${@} | sed -e "s/.dat/_corrected.dat/g")
 
-    echo Calling IPF
+    echo "Calling IPF"
     #No return code possible because Matlab launcher closes before Matlab does
     bash multiIPF.sh $correctedfiles
 
     #Move out files from current directory to prevent tripling the already large number present.
-    echo Cleanup
+    echo "Cleanup"
     #p option prevents error if folder is extant
     mkdir -p out
     mkdir -p corrected
@@ -42,14 +42,14 @@ if (tclsh filter.tcl $@); then
     if [ -e NewStuff.dat ]; then
 	mv NewStuff.dat fits-$(date +%Y%m%d%H%M%S).txt
     else
-	echo Something went wrong, no fits found.
+	echo "Something went wrong, no fits found."
 	exit 1 #Script failed, return non-zero code
-    fi #/NewStuff
+    fi #/NewStuff renaming
   else
-    echo Zeroing failed
+    echo "Zeroing failed"
     exit 1
-  fi #/Baseline
+  fi #/Baseline conditional
 else
-    echo Filtering failed
+    echo "Filtering failed"
     exit 1
-fi #/Filter
+fi #/Filter conditional
