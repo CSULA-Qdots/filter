@@ -12,7 +12,7 @@ fi #/NewStuff removal
 
 echo "Filtering data"
 #Only continue if Filter prceeded error-free
-if (tclsh filter.tcl $@); then
+if (tclsh filter.tcl --sortby=ev $@); then
 
   #Operate on files output by filter
   #sed (s)earches for ".dat", replacing with ".out.dat", (g)lobally
