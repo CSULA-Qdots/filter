@@ -1,4 +1,13 @@
 #Copy this to your home directory and customize.
+#In Linux, cp example.filterrc2 ~/.filterrc2
+#In Windows, this belongs in directory above My Documents
+#
+#Identify user in logs
 setopt operator "YOUR NAME HERE"
+#Half-width of moving average
 setopt delta 10
+#Amount of deviation from average to reject
+#0.5 would reject a 50% deviation
 setopt threshold 0.10
+#Sorts output files by named collumn
+setopt sortby=ev
