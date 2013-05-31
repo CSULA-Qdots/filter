@@ -12,9 +12,11 @@ function zero (input)
 
 	for i = 1:numFiles
 		file = list_names(i);
+        try
 		subtractBaseline(file);
-	end
-
+        catch e
+        end
+    end
 
 	function subtractBaseline (fileName)
 		% Grab the data.
@@ -24,6 +26,7 @@ function zero (input)
 		% The .data part of a structure is the numerical part. Headers will be ignored.
 		try
         signal = dataStructure.data;
+        header = dataStructure.textdata;
         catch e
             signal = dataStructure;            
         end
@@ -107,7 +110,8 @@ function zero (input)
 
 		% Subtract out the callibration and put it in the file.
 		% m is total number of points
-
+        fprintf(fileHandle, '%s\n', header{1});
+        fprintf(fileHandle, '%s\t%s\t%s\n', header{2}, header{3}, header{4});
 		for i = 1:m
 			g(i,1) = signal(i,1);
 			g(i,2) = signal(i,2) - amp(signal(i, 1)) * backgroundQuadraticApprox(signal(i,1));

@@ -16,14 +16,14 @@ if (tclsh filter.tcl $@); then
 
   #Operate on files output by filter
   #sed (s)earches for ".dat", replacing with ".out.dat", (g)lobally
-  outfiles=$(echo ${@} | sed -e "s/.dat/.out.dat/g")
+  outfiles=$(ls $@ | cat | xargs | sed -e "s/.dat/.out.dat/g")
 
   echo "Subtracting GaAs baseline"
   #Only continue if Baseline prceeded error-free
   if (bash baseline.sh $outfiles); then
 
     #Operate on files output by baseline
-    correctedfiles=$(echo ${@} | sed -e "s/.dat/_corrected.dat/g")
+    correctedfiles=$(ls $@ | cat | xargs | sed -e "s/.dat/_corrected.dat/g")
 
     echo "Calling IPF"
     #No return code possible because Matlab launcher closes before Matlab does
