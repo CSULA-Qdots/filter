@@ -19,13 +19,13 @@ filter.tcl
 New options file format. New, more powerful command line syntax. Actually writes the default config file! Doesn't do globbing, so windows users will need to specify full filnemaes, not just \*.dat
 
 Options:
-* - 
+* `-` 
   Read more filenames from STDIN
-* --optname
+* `--optname`
 shorthand for --optname=1
-* --optname=value
+* `--optname=value`
 set the option named 'optname' to 'value'
-* --
+* `--`
 all things after this are treated as filenames.`
 
 Order isn't important unless you have some wierd filenames that look like options. Options on the command line over-ride those in the defaults file.
