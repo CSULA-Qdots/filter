@@ -4,12 +4,12 @@ Data filtering for the CSULA quantum-dot spectroscopy experiment
 
 Basic noise-reject algorythm:
 
-X = Wavelength under consideration.
-T = Reject threshold.
-delta =Range to average over.
-A = Running average over points between x +/- delta.
-D = |(X-A)/A|
-Reject if D>T
+* X = Wavelength under consideration.
+* T = Reject threshold.
+* delta =Range to average over.
+* A = Running average over points between x +/- delta.
+* D = |(X-A)/A|
+* Reject if D>T
 
 Some experimentation shows minimal noise rejection until threshhold is below 0.5
 and/or delta grows over 4. Suggest values of 0.10 and 10.
@@ -19,6 +19,7 @@ filter.tcl
 New options file format. New, more powerful command line syntax. Actually writes the default config file! Doesn't do globbing, so windows users will need to specify full filnemaes, not just \*.dat
 
 Options:
+`
     -
 Read more filenames from STDIN
     --optname
@@ -26,7 +27,7 @@ shorthand for --optname=1
     --optname=value
 set the option named 'optname' to 'value'
     --
-all things after this are treated as filenames.
+all things after this are treated as filenames.`
 
 Order isn't important unless you have some wierd filenames that look like options. Options on the command line over-ride those in the defaults file.
 
