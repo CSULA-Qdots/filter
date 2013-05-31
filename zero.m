@@ -128,13 +128,15 @@ function zero (input)
 		% This function is our quadratic fit of the background GaAs wafer.
 		function y = backgroundQuadraticApprox(x)
 
-            bgFitParam1 = 12400.0;
-			bgConst = 0.0015873240642803;
-			bgLinear = 0.00000025667991263308;
-			bgQuadratic = 0.000000000011008884166353;
+			bgConst = -23.928;
+			bgLinear = 108.91;
+			bgQuadratic = -205.33;
+            bgCubic = 205.39;
+            bgQuartic = -115.01;
+            bgQuintic = 34.199;
+            bgSextic = -4.2198;
 
-			r = bgFitParam1/x; % The original formula is in wavelength, and our data is in eV.
-			y = bgConst - bgLinear*r +bgQuadratic*r*r;
+			y = bgConst + bgLinear*x + bgQuadratic*x*x + bgCubic*x*x*x + bgQuartic*x*x*x*x + bgQuintic*x*x*x*x*x + bgSextic*x*x*x*x*x*x;
 		end
 
 
