@@ -9,9 +9,13 @@ function multiIPF(start, num1, num2)
 	try
         signal = dlmread(name, '\t');
         catch exc
-        crack = importdata(name);
-        signal = crack.data;
+        try
+            crack = importdata(name);
+            signal = crack.data;
+        catch exc2
+            continue;
         end
+    end
         
         fileHand = fopen('NewStuff.dat', 'at');
             fprintf(fileHand, '%s\n', name);
