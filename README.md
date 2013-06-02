@@ -1,3 +1,8 @@
+Experimental Commits
+====================
+Please don't push them to 'master' and... in fact, any time you do work on this, work on a branch. Even if it works and you merge it right in after.
+'master' should /always/ be functioning code. Branch, code, merge. It keeps things self consistant.
+
 filter.tcl
 ==========
 Data filtering for the CSULA quantum-dot spectroscopy experiment
