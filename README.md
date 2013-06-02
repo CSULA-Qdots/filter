@@ -36,8 +36,19 @@ Options list:
 + operator "Your Full Name"
 + rescale (not yet implimented)
 + sortby "columnName"
++ laser "lasername"
++ laserlow (integer)
++ laserhigh (integer)
 
-Valid column names are: "none", "ev", "lambda", "corrected", "intensity", and "temp". No quotes please.
+Valid column names are: "none", "ev", "lambda", "corrected", "intensity", and "temp". Valid Laser Names are "red" and "green" No quotes please.
+
+`--laser=red` is short for `--laserlow=7000 --laserhigh=7250`
+
+`--laser=green` is short for `--laserlow=10300 --laserhigh=11600`
+
+`--laser=foo` will override high/low settings.
+
+NOTE: This needs a rewrite.
 
 MultiIPF
 ========

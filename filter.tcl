@@ -113,7 +113,7 @@ set rejectlist {}
       set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
       set wl $currentdata($i.lambda)
       set ev $currentdata($i.ev)
-      if {(($wl >= opts(laserlow)) && ($wl <= $opts(laserhigh))) || (($wl >=10300)&&($wl <= 11600))} {
+      if {(($wl >= [getopt laserlow]) && ($wl <= [getopt laserhigh])) || (($wl >=10300)&&($wl <= 11600))} {
          lappend rejectlist $i
       } {
          if {$deviation > $opts(threshold)} {
@@ -275,21 +275,19 @@ set readstdin 0
 }
 
 proc setlasercuts {} {
-   if {[string equals [getopt laser] "red"]} {
+   if {[string equal -ignorecase [getopt laser] "red"]} {
       log "Using laser: Red"
       setopt laserlow 7000
       setopt laserhigh 7250
       return red
    }
-   if {[string equals [getopt laser] "green"]} {
+   if {[string equal -ignorecase [getopt laser] "green"]} {
       log "Using laser: gree"
       setopt laserlow 10300
       setopt laserhigh 11600
       return green
    }
    log "Using laser: None"
-   setopt laserlow 0
-   setopt laserhigh 0
    return none
 }
 
@@ -316,10 +314,6 @@ if [file exists $configfile] {
 set filenames [parseargs]
 log "Files: $filenames"
 setlasercuts
-log $opts(laserlow)
-log $opts(laserhigh)
-log exiting.
-log exit
 foreach fname $filenames {
    log "--"
    if {[string match -nocase "*.out.dat" $fname]} {
