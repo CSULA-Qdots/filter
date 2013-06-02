@@ -113,11 +113,12 @@ set rejectlist {}
       set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
       set wl $currentdata($i.lambda)
       set ev $currentdata($i.ev)
-      if {(($wl >= 7000) && ($wl <=7800)) || (($wl >=10300)&&($wl <= 11600))} {
+      if {($wl >= [getopt laserlow]) && ($wl <= [getopt laserhigh])} {
          lappend rejectlist $i
-      }
-      if {$deviation > $opts(threshold)} {
-         lappend rejectlist $i
+      } {
+         if {$deviation > $opts(threshold)} {
+            lappend rejectlist $i
+         }
       }
    }
    set currentdata(rejectlist) $rejectlist
@@ -273,6 +274,23 @@ set readstdin 0
    return $filenames
 }
 
+proc setlasercuts {} {
+   if {[string equal -nocase [getopt laser] "red"]} {
+      log "Using laser: Red"
+      setopt laserlow 7000
+      setopt laserhigh 7250
+      return red
+   }
+   if {[string equal -nocase [getopt laser] "green"]} {
+      log "Using laser: gree"
+      setopt laserlow 10300
+      setopt laserhigh 11600
+      return green
+   }
+   log "Using laser: None"
+   return none
+}
+
 # gui callibacks start here
 
 # start of global initilization
@@ -295,6 +313,7 @@ if [file exists $configfile] {
 # Main loop
 set filenames [parseargs]
 log "Files: $filenames"
+setlasercuts
 foreach fname $filenames {
    log "--"
    if {[string match -nocase "*.out.dat" $fname]} {
