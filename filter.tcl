@@ -113,7 +113,7 @@ set rejectlist {}
       set deviation [expr {abs(($currentdata($i.intensity)-$avg)/$avg)}]
       set wl $currentdata($i.lambda)
       set ev $currentdata($i.ev)
-      if {(($wl >= [getopt laserlow]) && ($wl <= [getopt laserhigh])) || (($wl >=10300)&&($wl <= 11600))} {
+      if {($wl >= [getopt laserlow]) && ($wl <= [getopt laserhigh])} {
          lappend rejectlist $i
       } {
          if {$deviation > $opts(threshold)} {
