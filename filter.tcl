@@ -275,13 +275,13 @@ set readstdin 0
 }
 
 proc setlasercuts {} {
-   if {[string equal -ignorecase [getopt laser] "red"]} {
+   if {[string equal -nocase [getopt laser] "red"]} {
       log "Using laser: Red"
       setopt laserlow 7000
       setopt laserhigh 7250
       return red
    }
-   if {[string equal -ignorecase [getopt laser] "green"]} {
+   if {[string equal -nocase [getopt laser] "green"]} {
       log "Using laser: gree"
       setopt laserlow 10300
       setopt laserhigh 11600
