@@ -21,8 +21,8 @@ greenfiles=$(echo $@ | tr ' ' '\n' | grep 20G | xargs)
 
 echo "Filtering data"
 #Only continue if Filter prceeded error-free
-if (tclsh filter.tcl --sortby=ev -- $redfiles); then
-if (tclsh filter.tcl --sortby=ev -- $greenfiles); then
+if (tclsh filter_red.tcl --sortby=ev -- $redfiles); then
+if (tclsh filter_green.tcl --sortby=ev -- $greenfiles); then
 
   #Operate on files output by filter
   #sed (s)earches for ".dat", replacing with ".out.dat", (g)lobally
