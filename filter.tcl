@@ -274,6 +274,7 @@ set readstdin 0
    return $filenames
 }
 
+#Removes laser second orders from data
 proc setlasercuts {} {
    if {[string equal -nocase [getopt laser] "red"]} {
       log "Using laser: Red"
@@ -282,7 +283,7 @@ proc setlasercuts {} {
       return red
    }
    if {[string equal -nocase [getopt laser] "green"]} {
-      log "Using laser: gree"
+      log "Using laser: Green"
       setopt laserlow 10300
       setopt laserhigh 11600
       return green
