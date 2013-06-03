@@ -285,7 +285,7 @@ proc setlasercuts {} {
    if {[string equal -nocase [getopt laser] "green"]} {
       log "Using laser: Green"
       setopt laserlow 10300
-      setopt laserhigh 11600
+      setopt laserhigh 10950
       return green
    }
    log "Using laser: None"
