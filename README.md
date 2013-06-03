@@ -3,6 +3,18 @@ Experimental Commits
 Please don't push them to 'master' and... in fact, any time you do work on this, work on a branch. Even if it works and you merge it right in after.
 'master' should /always/ be functioning code. Branch, code, merge. It keeps things self consistant.
 
+Branch Naming
+=============
+So, the way you name a branch is this: initials.descriptive and then you
+can work on it. Don't fork the project, it makes it harder for me to merge your improvements back into the mainline.
+
+To make a branch to work on a feature, I (Ryan) will type: git branch rd.laserdetect
+
+Master Control Program
+======================
+Automate filtering, zeroing, and interactive fitting. Call with a list of filenames, all steps shoudl proceed automatically.
+System limitations may preclude analysis of more than approximately 50 files at once.
+
 filter.tcl
 ==========
 Data filtering for the CSULA quantum-dot spectroscopy experiment
@@ -19,7 +31,7 @@ Basic noise-reject algorythm:
 Some experimentation shows minimal noise rejection until threshhold is below 0.5
 and/or delta grows over 4. Suggest values of 0.10 and 10.
 
-filter.tcl
+Filter Instructions
 ===========
 New options file format. New, more powerful command line syntax. Actually writes the default config file! Doesn't do globbing, so windows users will need to specify full filnemaes, not just \*.dat
 
@@ -58,9 +70,12 @@ NOTE: This needs a rewrite.
 MultiIPF
 ========
 
+Fit many data files at once. When fit is acceptable, data is saved to a file with a keypress. 
+
 MultiIPF instructions:
-Run multiIPF, via mcp.sh or in matlab directly. 
-multiIPF uses 3 parameters: The first is the name of a file that is a list of all the files 
+Generally called by MCP. On command line, call multiIPF.sh with filenames.
+Within Matlab, multiIPF requires specially prepared input.
+MultiIPF uses 3 parameters: The first is the name of a file that is a list of all the files 
 you want to analyze (which must be in the same directory as multiIPF) The files must include 
 extensions and must be line delimited.
 The second two parameters are the columns in the data files that you wish to analyze. These are columns 1 and 2.
@@ -82,39 +97,27 @@ a successful fit, the same list of peaks will be appended again.
 
 After finishing all the files, the program will exit, and the peak results will be in NewStuff.dat.
 
-rescale.tcl
-===========
-Removed since we are workign on makign this an option. Functionality is being worked into stock filter.
-
-example.filterrc
+example.filterrc2
 ================
-Provides options to filter.tcl and rescale.tcl. example.filterrc should be copied into your home directory under the name .filterrc
+Provides options to Filter. example.filterrc2 should be copied into your home directory under the name .filterrc2
 Change username to your own name for logging purposes. See logs in QD/data
 
 zero.m
 ===============
 Subtracts a baseline from data based on a fit to a background run.
-Use baselineCorrector.sh if possible. To use directly
+Use baseline.sh if possible. To use directly
 Open MatLAB and type: zero('filename')
-filename should be in the same directory as the baseline_zero.m unless pathed
-This program will output filename_corrected.out.eV.dat 
+filename should be in the same directory as the zero.m unless pathed
+This program will output filename_corrected.dat 
 
-baselineCorrector.sh
+baseline.sh
 ===============
-Creates baseline subtracted versions of all eV.out.dat files in the current working directory. 
-Works on linux only. 
+Creates zeroed versions of files passed to it.
 
-spreadsheets/TestDataGenerator.ods
+fakeData/TestDataGenerator.ods
 ===============
 Spreadsheet that creates data similar to our experiments. The centroids, height, and width factors of the peaks
 are adjustable on the Controls tab. The NoiseEx tab contains some functions for different kinds of noise.
 They can be summed up in the left column and the graph and first tab automatically update.
 To export data switch to the Out tab, Save As csv, and check the box to adjust options. The text delimiter should be "
 and the separator should be space or tab.
-
-Branch Naming
-=============
-So, the way you name a branch is this: initials.descriptive and then you
-can work on it. Don't fork the project, it makes it harder for me to merge your improvements back into the mainline.
-
-To make a branch to work on a feature, I (Ryan) will type: git branch rd.laserdetect
