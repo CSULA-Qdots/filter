@@ -23,9 +23,9 @@ fi #/NewStuff removal
 redfiles=$(echo $@ | tr ' ' '\n' | grep RMG | xargs)
 greenfiles=$(echo $@ | tr ' ' '\n' | grep 20G | xargs)
 
+#oredfiles=$(echo $@ | tr ' ' '\n' | grep 5R | xargs)
 #ogreenfiles=$(echo $@ | tr ' ' '\n' | grep 5G | xargs)
 #violetfiles=$(echo $@ | tr ' ' '\n' | grep 5V | xargs)
-#oredfiles=$(echo $@ | tr ' ' '\n' | grep 5R | xargs)
 
 echo "Filtering data"
 #Only continue if Filter prceeded error-free
@@ -47,6 +47,32 @@ if [[ -n $greenfiles ]]; then
     exit 1
   fi
 fi
+
+#Uncomment if we create new data with old lasers
+#if [[ -n $oredfiles ]]; then
+#   tclsh filter.tcl --laser=red --sortby=ev -- $oredfiles
+#   returncode=$?
+#   if [[ "$returncode" -ne "0" ]]; then
+#     echo "Filtering old red failed"
+#     exit 1
+#   fi
+# fi
+# if [[ -n $ogreenfiles ]]; then
+#   tclsh filter.tcl --laser=green --sortby=ev -- $ogreenfiles
+#   returncode=$?
+#   if [[ "$returncode" -ne "0" ]]; then
+#     echo "Filtering old green failed"
+#     exit 1
+#   fi
+# fi
+# if [[ -n $violetfiles ]]; then
+#   tclsh filter.tcl --laser=violet --sortby=ev -- $violetfiles
+#   returncode=$?
+#   if [[ "$returncode" -ne "0" ]]; then
+#     echo "Filtering violet failed"
+#     exit 1
+#   fi
+# fi
 
 
 #Operate on files output by filter
@@ -99,6 +125,7 @@ mkdir -p reject
 mv $correctedfiles corrected/
 mv $outfiles out/
 mv $rejectfiles reject/
+echo "File not found errors indicate data with unhandled lasers"
 
 #Rename generic output file to current date
 #Date code used is YYYYMMDDHMS, such as 20130115161205, matching logs from Filter
