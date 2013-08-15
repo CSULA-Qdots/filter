@@ -1,16 +1,18 @@
-%Corrector 1.1
+%Corrector 1.2
 %This program will apply all our corrections to the data
+%It also converts data into eV and sorts
+%It also will keep headers
 
-function Corrector_1 (input)
-
+function Corrector_2 (input)
 % Parse input into an array of filenames
 
 numFiles = 0; % number of files to operate on
 
 % Prepares the log file name
 Date_String = datestr(now);
-date_time = regexprep(regexprep(Date_String, ' ', '-'), ':', '-')
-logFileName = strcat('Correction-Log-',date_time,'.txt')
+date_time = regexprep(regexprep(Date_String, ' ', '-'), ':', '-');
+logFileName = strcat('Correction-Log-',date_time,'.txt');
+headers = 'eV               \tSignal           \tTemperature      \tPhotometer       \tPhoto Correction \tZero Correction  \n';
 
 % This segment of the code splits up the input into multiple strings
 
@@ -45,14 +47,14 @@ for i = 1:numFiles
     if (success == 0)    
         fprintf(fileHandle, '%s\n', 'Parsing File Failed.');
     else
-        data_prime = photometerCorrect(data);
-        data_double_prime = negativeCorrect(data);
-        total_data = [data data_prime data_double_prime];
-        printData(total_data, char(newfile));
+        data_sort = sort(data);
+        data_prime = photometerCorrect(data_sort);
+        data_double_prime = negativeCorrect(data_sort);
+        total_data = [data_sort data_prime data_double_prime];
+        printData(total_data, char(newfile), headers);
         fprintf(fileHandle, '%s%s\n', 'Corrected file printed to: ', char(newfile));
         
     end
-    
 end
 
 fclose(fileHandle)
@@ -82,7 +84,7 @@ fclose(fileHandle)
         end
     end
     % The following function prints the data, in tab-delimited format
-    function printData(g, newfile)
+    function printData(g, newfile, headers)
         [m, n] = size(g);
 
          format = '%.15f';
@@ -94,6 +96,7 @@ fclose(fileHandle)
 		%Opens a file for writing
 		fileHandle2 = fopen(newfile, 'w');
 
+        fprintf(fileHandle2, headers);
 		for i = 1:m
 			% special formatting for the output file
 			fprintf(fileHandle2, format, g(i,:));
@@ -103,7 +106,23 @@ fclose(fileHandle)
 		fclose(fileHandle2);
     
     end
-    % The following function applies the photometer correction
+    % The following function sorts the data
+    function sorted = sort(g)
+        [m, n] = size(g);
+        g_prime = g;
+        if (g(1,1) > 5) % if units are in wavelength
+        for k = 1:m
+            g_prime(k,1) = 12398.4/g_prime(k,1); % convert to eV
+        end
+        end
+        if (n == 3)
+            extra = zeros(m,1);
+            sorted = [sortrows(g_prime, 1) extra]; % sort according to row 1            
+        else
+            sorted = sortrows(g_prime, 1); % sort according to row 1            
+        end
+    end
+    % The following function applies the photometer correction    
     function g_prime = photometerCorrect(g)
     [m, n] = size(g);
     g_prime = zeros(m,1);
@@ -116,7 +135,7 @@ fclose(fileHandle)
             end                
         end
             
-        if (average < 0.05)
+        if (average < -0.05)
             for i = 1:m
                 g_prime(i) = -g(i,2)/g(i,4);
             end                
